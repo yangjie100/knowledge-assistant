@@ -22,6 +22,7 @@
         <module>ka-common</module>
         <module>ka-rag</module>
         <module>ka-chat</module>
+        <module>ka-agent</module>
         <module>ka-admin</module>
         <module>ka-webapp</module>
     </modules>
