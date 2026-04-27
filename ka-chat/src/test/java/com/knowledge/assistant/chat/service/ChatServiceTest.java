@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.document.Document;
 
 import java.util.List;
@@ -23,6 +24,9 @@ class ChatServiceTest {
     @Mock
     private RetrievalService retrievalService;
 
+    @Mock
+    private ChatMemory chatMemory;
+
     @Test
     void chatCallsRetrievalServiceWithQuestion() {
         when(retrievalService.retrieve(anyString())).thenReturn(List.of(
@@ -39,7 +43,7 @@ class ChatServiceTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("Spring AI is a framework.");
 
-        ChatService service = new ChatService(chatClient, retrievalService);
+        ChatService service = new ChatService(chatClient, retrievalService, chatMemory);
         String result = service.chat("What is Spring AI?", "conv-1");
 
         assertThat(result).isEqualTo("Spring AI is a framework.");
@@ -59,7 +63,7 @@ class ChatServiceTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("I don't know.");
 
-        ChatService service = new ChatService(chatClient, retrievalService);
+        ChatService service = new ChatService(chatClient, retrievalService, chatMemory);
         String result = service.chat("unknown topic", "conv-2");
 
         assertThat(result).isEqualTo("I don't know.");
@@ -82,7 +86,7 @@ class ChatServiceTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("Combined answer.");
 
-        ChatService service = new ChatService(chatClient, retrievalService);
+        ChatService service = new ChatService(chatClient, retrievalService, chatMemory);
         String result = service.chat("multi-doc query", "conv-3");
 
         assertThat(result).isEqualTo("Combined answer.");
