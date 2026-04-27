@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: knowledge-assistant
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: qwen2.5
+      embedding:
+        options:
+          model: qwen2.5
+    vectorstore:
+      redis:
+        initialize-schema: true
+        index-name: knowledge_assistant
+        prefix: "ka_"
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: "123456"
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB

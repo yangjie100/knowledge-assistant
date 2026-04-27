@@ -21,6 +21,11 @@
             <artifactId>ka-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.knowledge</groupId>
+            <artifactId>ka-chat</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

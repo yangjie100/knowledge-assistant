@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow px-6 py-3 flex items-center justify-between shrink-0">
+        <h1 class="text-xl font-bold text-gray-800">Knowledge Assistant</h1>
+        <div class="flex items-center gap-4">
+            <span id="convId" class="text-sm text-gray-500">Conversation: --</span>
+            <button id="newChatBtn" class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">New Chat</button>
+            <a href="/admin.html" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300">Admin</a>
+        </div>
+    </header>
+
+    <!-- Message Area -->
+    <div id="messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+    </div>
+
+    <!-- Input Form -->
+    <form id="chatForm" class="bg-white shadow px-6 py-4 flex gap-3 shrink-0">
+        <input id="questionInput" type="text" placeholder="Ask a question..." class="flex-1 border rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+        <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Send</button>
+    </form>
+
+    <script>
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+
+        let conversationId = generateUUID();
+        const convIdEl = document.getElementById('convId');
+        const messagesEl = document.getElementById('messages');
+        const chatForm = document.getElementById('chatForm');
+        const questionInput = document.getElementById('questionInput');
+        const newChatBtn = document.getElementById('newChatBtn');
+
+        function updateConvDisplay() {
+            convIdEl.textContent = 'Conversation: ' + conversationId.substring(0, 8) + '...';
+        }
+        updateConvDisplay();
+
+        function appendMessage(role, text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex ' + (role === 'user' ? 'justify-end' : 'justify-start');
+
+            const bubble = document.createElement('div');
+            bubble.className = role === 'user'
+                ? 'max-w-[70%] bg-blue-500 text-white rounded-2xl px-4 py-2'
+                : 'max-w-[70%] bg-white text-gray-800 rounded-2xl px-4 py-2 shadow';
+            bubble.style.whiteSpace = 'pre-wrap';
+            bubble.textContent = text;
+
+            wrapper.appendChild(bubble);
+            messagesEl.appendChild(wrapper);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            appendMessage('user', question);
+            questionInput.value = '';
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question, conversationId: conversationId })
+                });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    conversationId = data.data.conversationId || conversationId;
+                    updateConvDisplay();
+                    appendMessage('assistant', data.data.answer || 'No response');
+                } else {
+                    appendMessage('assistant', 'Error: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                appendMessage('assistant', 'Network error: ' + err.message);
+            }
+        });
+
+        newChatBtn.addEventListener('click', function() {
+            conversationId = generateUUID();
+            updateConvDisplay();
+            messagesEl.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
