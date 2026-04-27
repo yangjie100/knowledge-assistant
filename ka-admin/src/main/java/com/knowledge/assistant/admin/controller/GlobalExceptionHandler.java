@@ -26,6 +26,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Result<Void> handleGeneral(Exception e) {
         log.error("Unexpected error", e);
-        return Result.fail("Internal error: " + e.getMessage());
+        return Result.fail("An unexpected error occurred");
     }
 }

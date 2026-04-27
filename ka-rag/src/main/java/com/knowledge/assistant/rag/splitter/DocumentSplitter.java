@@ -12,8 +12,13 @@ import java.util.List;
 @Component
 public class DocumentSplitter {
 
-    private static final int DEFAULT_CHUNK_SIZE = 800;
-    private static final int DEFAULT_OVERLAP = 200;
+    private static final int CHUNK_SIZE = 800;
+    private static final int MIN_CHUNK_SIZE_CHARS = 200;
+
+    private final TokenTextSplitter splitter = TokenTextSplitter.builder()
+            .withChunkSize(CHUNK_SIZE)
+            .withMinChunkSizeChars(MIN_CHUNK_SIZE_CHARS)
+            .build();
 
     /**
      * Split a list of documents into smaller chunks.
@@ -22,10 +27,6 @@ public class DocumentSplitter {
      * @return list of split document chunks
      */
     public List<Document> split(List<Document> documents) {
-        TokenTextSplitter splitter = TokenTextSplitter.builder()
-                .withChunkSize(DEFAULT_CHUNK_SIZE)
-                .withMinChunkSizeChars(DEFAULT_OVERLAP)
-                .build();
         return splitter.apply(documents);
     }
 }
