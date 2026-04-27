@@ -1,0 +1,21 @@
+# Maven
+target/
+
+# IDE
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build
+build/
+out/
