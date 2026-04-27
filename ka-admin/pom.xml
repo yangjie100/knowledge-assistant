@@ -18,7 +18,7 @@
     <dependencies>
         <dependency>
             <groupId>com.knowledge</groupId>
-            <artifactId>ka-chat</artifactId>
+            <artifactId>ka-rag</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
