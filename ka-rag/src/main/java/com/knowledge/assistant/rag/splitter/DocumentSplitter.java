@@ -2,12 +2,14 @@ package com.knowledge.assistant.rag.splitter;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Splits documents into smaller chunks using token-based splitting.
  */
+@Component
 public class DocumentSplitter {
 
     private static final int DEFAULT_CHUNK_SIZE = 800;

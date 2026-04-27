@@ -2,12 +2,14 @@ package com.knowledge.assistant.rag.loader;
 
 import com.knowledge.assistant.common.exception.DocumentParseException;
 import org.springframework.ai.document.Document;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Factory that selects the appropriate DocumentLoader based on filename extension.
  */
+@Component
 public class DocumentLoaderFactory {
 
     private final List<DocumentLoader> loaders;
