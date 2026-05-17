@@ -10,5 +10,6 @@ public class KnowledgeDocument {
     private String title;
     private String sourceType;
     private int chunkCount;
+    private long fileSize;
     private LocalDateTime createTime;
 }

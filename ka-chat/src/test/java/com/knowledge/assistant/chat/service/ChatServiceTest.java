@@ -33,7 +33,6 @@ class ChatServiceTest {
                 new Document("Spring AI is a framework for AI applications.")
         ));
 
-        // Mock ChatClient fluent API chain
         ChatClient.ChatClientRequestSpec requestSpec = mock(ChatClient.ChatClientRequestSpec.class);
         ChatClient.CallResponseSpec responseSpec = mock(ChatClient.CallResponseSpec.class);
 

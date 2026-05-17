@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -39,9 +40,35 @@ public class KnowledgeController {
         }
     }
 
+    @PostMapping("/upload/batch")
+    public Result<List<KnowledgeDocument>> uploadBatch(@RequestParam("files") List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return Result.fail("No files provided");
+        }
+        List<KnowledgeDocument> results = new java.util.ArrayList<>();
+        for (MultipartFile file : files) {
+            String filename = file.getOriginalFilename();
+            if (filename == null || filename.isBlank()) continue;
+            String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+            if (!ALLOWED_EXTENSIONS.contains(extension)) continue;
+            try {
+                results.add(knowledgeService.upload(file.getBytes(), filename));
+            } catch (Exception e) {
+                log.warn("Failed to upload {}: {}", filename, e.getMessage());
+            }
+        }
+        return Result.ok(results);
+    }
+
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable String id) {
         knowledgeService.delete(id);
+        return Result.ok(null);
+    }
+
+    @DeleteMapping("/batch")
+    public Result<Void> deleteBatch(@RequestBody List<String> ids) {
+        knowledgeService.deleteBatch(ids);
         return Result.ok(null);
     }
 
@@ -49,4 +76,14 @@ public class KnowledgeController {
     public Result<List<KnowledgeDocument>> list() {
         return Result.ok(knowledgeService.list());
     }
+
+    @GetMapping("/stats")
+    public Result<Map<String, Object>> stats() {
+        return Result.ok(Map.of(
+                "totalDocuments", knowledgeService.getTotalCount(),
+                "totalChunks", knowledgeService.getTotalChunks()
+        ));
+    }
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(KnowledgeController.class);
 }
