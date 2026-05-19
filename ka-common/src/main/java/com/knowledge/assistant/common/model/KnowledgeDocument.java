@@ -12,4 +12,8 @@ public class KnowledgeDocument {
     private int chunkCount;
     private long fileSize;
     private LocalDateTime createTime;
+    private String contentHash;
+    private int wordCount;
+    private String language;
+    private String status;
 }

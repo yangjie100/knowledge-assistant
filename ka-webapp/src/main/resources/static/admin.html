@@ -12,7 +12,7 @@
         <a href="/index.html" class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">Back to Chat</a>
     </header>
     <main class="max-w-4xl mx-auto mt-8 px-4 space-y-6">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-lg shadow p-4 text-center">
                 <div id="statDocs" class="text-3xl font-bold text-blue-600">0</div>
                 <div class="text-sm text-gray-500 mt-1">Documents</div>
@@ -20,6 +20,14 @@
             <div class="bg-white rounded-lg shadow p-4 text-center">
                 <div id="statChunks" class="text-3xl font-bold text-green-600">0</div>
                 <div class="text-sm text-gray-500 mt-1">Chunks</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div id="statSize" class="text-3xl font-bold text-purple-600">0 B</div>
+                <div class="text-sm text-gray-500 mt-1">Total Size</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div id="statTypes" class="text-lg font-bold text-orange-600">-</div>
+                <div class="text-sm text-gray-500 mt-1">By Type</div>
             </div>
         </div>
         <section class="bg-white rounded-lg shadow p-6">

@@ -7,6 +7,8 @@ const docList = document.getElementById("docList");
 const batchDeleteBtn = document.getElementById("batchDeleteBtn");
 const statDocs = document.getElementById("statDocs");
 const statChunks = document.getElementById("statChunks");
+const statSize = document.getElementById("statSize");
+const statTypes = document.getElementById("statTypes");
 
 uploadBtn.addEventListener("click", async function() {
     const files = fileInput.files;
@@ -48,6 +50,13 @@ async function loadStats() {
         if (data.success && data.data) {
             statDocs.textContent = data.data.totalDocuments || 0;
             statChunks.textContent = data.data.totalChunks || 0;
+            if (statSize) {
+                const bytes = data.data.totalSizeBytes || 0;
+                statSize.textContent = bytes > 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : bytes > 1024 ? (bytes / 1024).toFixed(1) + ' KB' : bytes + ' B';
+            }
+            if (statTypes && data.data.documentsByType) {
+                statTypes.textContent = Object.entries(data.data.documentsByType).map(function(e) { return e[0] + ': ' + e[1]; }).join(', ');
+            }
         }
     } catch(e) {}
 }

@@ -1,5 +1,6 @@
 package com.knowledge.assistant.chat.service;
 
+import com.knowledge.assistant.chat.memory.RedisChatMemoryRepository;
 import com.knowledge.assistant.rag.service.RetrievalService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,9 @@ class ChatServiceTest {
     @Mock
     private ChatMemory chatMemory;
 
+    @Mock
+    private RedisChatMemoryRepository chatMemoryRepository;
+
     @Test
     void chatCallsRetrievalServiceWithQuestion() {
         when(retrievalService.retrieve(anyString())).thenReturn(List.of(
@@ -42,7 +46,7 @@ class ChatServiceTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("Spring AI is a framework.");
 
-        ChatService service = new ChatService(chatClient, retrievalService, chatMemory);
+        ChatService service = new ChatService(chatClient, retrievalService, chatMemory, chatMemoryRepository);
         String result = service.chat("What is Spring AI?", "conv-1");
 
         assertThat(result).isEqualTo("Spring AI is a framework.");
@@ -62,7 +66,7 @@ class ChatServiceTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("I don't know.");
 
-        ChatService service = new ChatService(chatClient, retrievalService, chatMemory);
+        ChatService service = new ChatService(chatClient, retrievalService, chatMemory, chatMemoryRepository);
         String result = service.chat("unknown topic", "conv-2");
 
         assertThat(result).isEqualTo("I don't know.");
@@ -85,7 +89,7 @@ class ChatServiceTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("Combined answer.");
 
-        ChatService service = new ChatService(chatClient, retrievalService, chatMemory);
+        ChatService service = new ChatService(chatClient, retrievalService, chatMemory, chatMemoryRepository);
         String result = service.chat("multi-doc query", "conv-3");
 
         assertThat(result).isEqualTo("Combined answer.");

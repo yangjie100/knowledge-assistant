@@ -13,12 +13,17 @@
 
     <artifactId>ka-agent</artifactId>
     <name>KA Agent</name>
-    <description>AI Agent workflow patterns: Chain, Parallel, Routing</description>
+    <description>AI Agent workflow patterns: Chain, Parallel, Routing with RAG integration</description>
 
     <dependencies>
         <dependency>
             <groupId>com.knowledge</groupId>
             <artifactId>ka-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.knowledge</groupId>
+            <artifactId>ka-rag</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -4,6 +4,7 @@ import com.knowledge.assistant.admin.service.KnowledgeService;
 import com.knowledge.assistant.common.dto.Result;
 import com.knowledge.assistant.common.model.KnowledgeDocument;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/knowledge")
 @RequiredArgsConstructor
@@ -79,11 +81,6 @@ public class KnowledgeController {
 
     @GetMapping("/stats")
     public Result<Map<String, Object>> stats() {
-        return Result.ok(Map.of(
-                "totalDocuments", knowledgeService.getTotalCount(),
-                "totalChunks", knowledgeService.getTotalChunks()
-        ));
+        return Result.ok(knowledgeService.getDetailedStats());
     }
-
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(KnowledgeController.class);
 }

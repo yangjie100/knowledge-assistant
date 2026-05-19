@@ -5,20 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knowledge Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <style>
+        .markdown-content h1,.markdown-content h2,.markdown-content h3{margin:.5em 0;font-weight:600}
+        .markdown-content pre{background:#f6f8fa;border-radius:6px;padding:12px;overflow-x:auto;margin:.5em 0}
+        .markdown-content code{background:#f0f0f0;padding:2px 4px;border-radius:3px;font-size:.9em}
+        .markdown-content pre code{background:none;padding:0}
+        .markdown-content ul,.markdown-content ol{padding-left:1.5em;margin:.3em 0}
+        .markdown-content blockquote{border-left:3px solid #ddd;padding-left:1em;color:#666;margin:.5em 0}
+        .markdown-content table{border-collapse:collapse;width:100%;margin:.5em 0}
+        .markdown-content th,.markdown-content td{border:1px solid #ddd;padding:6px 12px}
+        .markdown-content p{margin:.3em 0}
+        .think-block summary svg{transition:transform .2s}
+        .think-block[open] summary svg{transform:rotate(90deg)}
+        #conversationSidebar{transition:transform .3s ease}
+    </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col">
     <!-- Header -->
     <header class="bg-white shadow px-6 py-3 flex items-center justify-between shrink-0">
         <h1 class="text-xl font-bold text-gray-800">Knowledge Assistant</h1>
         <div class="flex items-center gap-4">
+            <button id="historyBtn" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300">History</button>
             <span id="convId" class="text-sm text-gray-500">Conversation: --</span>
             <button id="newChatBtn" class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">New Chat</button>
             <a href="/admin.html" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300">Admin</a>
         </div>
     </header>
 
-    <!-- Message Area -->
-    <div id="messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <div id="conversationSidebar" class="hidden w-72 bg-white shadow-lg flex flex-col shrink-0 border-r">
+            <div class="p-4 border-b flex items-center justify-between">
+                <h2 class="font-semibold text-gray-800">Conversations</h2>
+                <button id="closeSidebarBtn" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+            <div id="conversationList" class="flex-1 overflow-y-auto p-2 space-y-1">
+            </div>
+        </div>
+
+        <!-- Message Area -->
+        <div id="messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        </div>
     </div>
 
     <!-- Input Form -->

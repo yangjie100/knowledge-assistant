@@ -1,5 +1,7 @@
 package com.knowledge.assistant.chat.service;
 
+import com.knowledge.assistant.chat.dto.ConversationInfo;
+import com.knowledge.assistant.chat.memory.RedisChatMemoryRepository;
 import com.knowledge.assistant.rag.service.RetrievalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ public class ChatService {
     private final ChatClient chatClient;
     private final RetrievalService retrievalService;
     private final ChatMemory chatMemory;
+    private final RedisChatMemoryRepository chatMemoryRepository;
 
     public String chat(String question, String conversationId) {
         log.info("Chat question: {}, conversationId: {}", question, conversationId);
@@ -61,5 +64,13 @@ public class ChatService {
     public List<Message> getHistory(String conversationId) {
         log.info("Get history for conversationId: {}", conversationId);
         return chatMemory.get(conversationId);
+    }
+
+    public List<ConversationInfo> listConversations() {
+        return chatMemoryRepository.findAllConversationInfo();
+    }
+
+    public void deleteConversation(String conversationId) {
+        chatMemoryRepository.deleteByConversationId(conversationId);
     }
 }
