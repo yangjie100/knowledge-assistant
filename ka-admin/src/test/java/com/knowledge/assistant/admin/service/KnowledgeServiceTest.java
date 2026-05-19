@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.knowledge.assistant.common.model.KnowledgeDocument;
 import com.knowledge.assistant.rag.service.EmbedResult;
+import com.knowledge.assistant.rag.service.HybridRetrievalService;
 import com.knowledge.assistant.rag.service.EmbeddingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,8 @@ class KnowledgeServiceTest {
     @Mock
     private EmbeddingService embeddingService;
     @Mock
+    private HybridRetrievalService hybridRetrievalService;
+    @Mock
     private StringRedisTemplate redisTemplate;
     @Mock
     private ValueOperations<String, String> valueOps;
@@ -37,7 +40,7 @@ class KnowledgeServiceTest {
     private KnowledgeService createService() {
         when(redisTemplate.opsForValue()).thenReturn(valueOps);
         when(redisTemplate.opsForSet()).thenReturn(setOps);
-        return new KnowledgeService(embeddingService, redisTemplate, objectMapper);
+        return new KnowledgeService(embeddingService, hybridRetrievalService, redisTemplate, objectMapper);
     }
 
     @Test
@@ -109,7 +112,7 @@ class KnowledgeServiceTest {
     @Test
     void listReturnsEmptyWhenNoDocuments() {
         when(redisTemplate.opsForSet()).thenReturn(setOps);
-        KnowledgeService service = new KnowledgeService(embeddingService, redisTemplate, objectMapper);
+        KnowledgeService service = new KnowledgeService(embeddingService, hybridRetrievalService, redisTemplate, objectMapper);
 
         List<KnowledgeDocument> docs = service.list();
 

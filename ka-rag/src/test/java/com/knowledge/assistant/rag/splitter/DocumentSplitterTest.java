@@ -1,5 +1,7 @@
 package com.knowledge.assistant.rag.splitter;
 
+import com.knowledge.assistant.rag.config.ChunkConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.document.Document;
 
@@ -10,7 +12,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DocumentSplitterTest {
 
-    private final DocumentSplitter splitter = new DocumentSplitter();
+    private DocumentSplitter splitter;
+
+    @BeforeEach
+    void setUp() {
+        ChunkConfig config = new ChunkConfig();
+        config.setDefaultSize(800);
+        config.setMinSize(200);
+        splitter = new DocumentSplitter(config);
+    }
 
     @Test
     void shortTextStaysAsSingleChunk() {

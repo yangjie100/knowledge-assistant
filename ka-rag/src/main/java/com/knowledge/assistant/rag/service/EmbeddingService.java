@@ -20,6 +20,7 @@ import java.util.UUID;
 public class EmbeddingService {
     private static final String CHUNK_KEY_PREFIX = "doc:chunks:";
     private static final String HASH_KEY_PREFIX = "doc:hash:";
+    private static final String CHUNK_TEXT_PREFIX = "chunk:text:";
 
     private final VectorStore vectorStore;
     private final DocumentLoaderFactory loaderFactory;
@@ -44,6 +45,13 @@ public class EmbeddingService {
         chunks.forEach(chunk -> chunk.getMetadata().put("docId", docId));
         vectorStore.add(chunks);
 
+        // Store chunk text in Redis Hash for full-text search
+        for (Document chunk : chunks) {
+            String chunkTextKey = CHUNK_TEXT_PREFIX + chunk.getId();
+                redisTemplate.opsForHash().put(chunkTextKey, "content", chunk.getText());
+                redisTemplate.opsForHash().put(chunkTextKey, "docId", docId);
+        }
+
         List<String> chunkIds = chunks.stream().map(Document::getId).toList();
         redisTemplate.opsForSet().add(CHUNK_KEY_PREFIX + docId,
                 chunkIds.toArray(new String[0]));
@@ -59,6 +67,9 @@ public class EmbeddingService {
         Set<String> chunkIds = redisTemplate.opsForSet().members(key);
         if (chunkIds != null && !chunkIds.isEmpty()) {
             vectorStore.delete(List.copyOf(chunkIds));
+            for (String chunkId : chunkIds) {
+                redisTemplate.delete(CHUNK_TEXT_PREFIX + chunkId);
+            }
             log.info("Deleted {} chunks for doc {}", chunkIds.size(), docId);
         } else {
             log.warn("No chunks found for docId: {}", docId);

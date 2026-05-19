@@ -27,3 +27,16 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+
+ka:
+  rag:
+    chunk:
+      default-size: 800
+      min-size: 200
+      overlap: 100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

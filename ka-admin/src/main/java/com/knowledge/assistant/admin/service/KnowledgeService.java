@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knowledge.assistant.common.model.KnowledgeDocument;
 import com.knowledge.assistant.rag.service.EmbedResult;
+import com.knowledge.assistant.rag.service.HybridRetrievalService;
 import com.knowledge.assistant.rag.service.EmbeddingService;
 import com.knowledge.assistant.rag.util.ContentHashUtil;
 import com.knowledge.assistant.rag.util.LanguageDetector;
@@ -25,6 +26,7 @@ public class KnowledgeService {
     private static final String DOC_INDEX_KEY = "doc:index";
 
     private final EmbeddingService embeddingService;
+    private final HybridRetrievalService hybridRetrievalService;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
@@ -44,6 +46,7 @@ public class KnowledgeService {
         doc.setStatus(result.duplicate() ? "DUPLICATE" : "ACTIVE");
 
         saveToRedis(result.docId(), doc);
+        hybridRetrievalService.clearCache();
         log.info("Document uploaded: {} -> {} ({} chunks){}", filename, result.docId(),
                 result.chunkCount(), result.duplicate() ? " [DUPLICATE]" : "");
         return doc;
@@ -53,6 +56,7 @@ public class KnowledgeService {
         embeddingService.deleteByDocId(id);
         redisTemplate.delete(DOC_KEY_PREFIX + id);
         redisTemplate.opsForSet().remove(DOC_INDEX_KEY, id);
+        hybridRetrievalService.clearCache();
         log.info("Document deleted: {}", id);
     }
 

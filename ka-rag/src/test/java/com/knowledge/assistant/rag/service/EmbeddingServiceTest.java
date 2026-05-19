@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -26,6 +27,7 @@ class EmbeddingServiceTest {
     @Mock private DocumentSplitter splitter;
     @Mock private StringRedisTemplate redisTemplate;
     @Mock private SetOperations<String, String> setOperations;
+    @Mock private HashOperations<String, Object, Object> hashOperations;
     @Mock private ValueOperations<String, String> valueOperations;
 
     @Test
@@ -35,6 +37,7 @@ class EmbeddingServiceTest {
         when(splitter.split(anyList())).thenReturn(List.of(doc));
         when(redisTemplate.opsForSet()).thenReturn(setOperations);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
         when(valueOperations.get(startsWith("doc:hash:"))).thenReturn(null);
 
         EmbeddingService service = new EmbeddingService(vectorStore, loaderFactory, splitter, redisTemplate);

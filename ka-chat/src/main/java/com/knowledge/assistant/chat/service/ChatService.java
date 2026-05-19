@@ -29,13 +29,11 @@ public class ChatService {
         log.info("Chat question: {}, conversationId: {}", question, conversationId);
 
         List<Document> context = retrievalService.retrieve(question);
-        String contextText = context.stream()
-                .map(Document::getText)
-                .collect(Collectors.joining("\n\n"));
+        String contextText = formatContext(context);
 
         return chatClient.prompt()
                 .user(userSpec -> userSpec
-                        .text("Context:\n{context}\n\nQuestion: {question}")
+                        .text("Context:\n{context}\n\nQuestion: {question}\n\nPlease cite sources in your answer.")
                         .param("context", contextText)
                         .param("question", question))
                 .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
@@ -47,18 +45,26 @@ public class ChatService {
         log.info("Stream chat question: {}, conversationId: {}", question, conversationId);
 
         List<Document> context = retrievalService.retrieve(question);
-        String contextText = context.stream()
-                .map(Document::getText)
-                .collect(Collectors.joining("\n\n"));
+        String contextText = formatContext(context);
 
         return chatClient.prompt()
                 .user(userSpec -> userSpec
-                        .text("Context:\n{context}\n\nQuestion: {question}")
+                        .text("Context:\n{context}\n\nQuestion: {question}\n\nPlease cite sources in your answer.")
                         .param("context", contextText)
                         .param("question", question))
                 .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                 .stream()
                 .content();
+    }
+
+    private String formatContext(List<Document> docs) {
+        return docs.stream()
+                .map(doc -> {
+                    String docId = doc.getMetadata().get("docId") instanceof String s ? s : "unknown";
+                    double score = doc.getMetadata().get("rrfScore") instanceof Number n ? n.doubleValue() : 0.0;
+                    return "[Source: " + docId + " (score: " + String.format("%.4f", score) + ")]\n" + doc.getText();
+                })
+                .collect(Collectors.joining("\n\n"));
     }
 
     public List<Message> getHistory(String conversationId) {
