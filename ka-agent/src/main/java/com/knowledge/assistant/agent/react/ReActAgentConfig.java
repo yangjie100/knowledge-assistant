@@ -6,7 +6,7 @@ import com.knowledge.assistant.agent.tools.KnowledgeSearchTool;
 import com.knowledge.assistant.agent.tools.KnowledgeStatsTool;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.ToolCallAdvisor;
-import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.model.tool.DefaultToolCallingManager;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.support.ToolCallbacks;
@@ -29,7 +29,7 @@ public class ReActAgentConfig {
 
     @Bean
     @Qualifier("reactChatClient")
-    public ChatClient reactChatClient(ChatModel chatModel,
+    public ChatClient reactChatClient(OllamaChatModel chatModel,
                                        KnowledgeSearchTool searchTool,
                                        DateTimeTool dateTimeTool,
                                        KnowledgeStatsTool statsTool,

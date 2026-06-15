@@ -5,6 +5,15 @@ spring:
   application:
     name: knowledge-assistant
   ai:
+    model:
+      # P0-2: spring.ai.model.* is EXACT-MATCH single-value in 1.1.4 — a comma-list
+      # (e.g. "ollama,zhipuai") matches NEITHER value, disabling BOTH. So only constrain
+      # EMBEDDING to Ollama (local, zero-cost): ZhiPuAI's embedding autoconfig stays off,
+      # avoiding 2 EmbeddingModel beans -> NoUniqueBeanDefinition (issue #1226).
+      # CHAT is left UNSET: matchIfMissing then keeps OllamaChatModel + ZhiPuAiChatModel
+      # both active; any ChatModel-interface ambiguity is resolved by the named ChatClient
+      # beans (OllamaChatClientConfig/GlmChatClientConfig) injecting concrete ChatModel types.
+      embedding: ollama
     ollama:
       base-url: http://localhost:11434
       chat:
@@ -13,6 +22,18 @@ spring:
       embedding:
         options:
           model: nomic-embed-text
+    zhipuai:
+      # GLM cloud model (P0-2): powers Agent tool-calling. Inert until ZHIPU_API_KEY is set.
+      # CRITICAL: use the CODING endpoint (/api/coding/paas), NOT the generic (/api/paas). A Coding Plan
+      # key only draws free quota on the Coding endpoint; the generic endpoint bills account balance
+      # (empty here) -> HTTP 429 / code 1113 "account in arrears". Spring AI appends /v4/chat/completions
+      # itself, so omit the trailing /v4. Ref: docs.bigmodel.cn/cn/guide/start/quick-start
+      base-url: ${ZHIPU_BASE_URL:https://open.bigmodel.cn/api/coding/paas}
+      api-key: ${ZHIPU_API_KEY:}
+      chat:
+        options:
+          model: ${ZHIPU_MODEL:glm-5.2}
+          temperature: 0.7
     vectorstore:
       redis:
         initialize-schema: true
