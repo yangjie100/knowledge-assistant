@@ -30,6 +30,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
+        <!-- GLM (ZhiPuAI) cloud model — for stable Agent tool-calling (P0-3) -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-zhipuai</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
