@@ -5,20 +5,13 @@ import com.knowledge.assistant.agent.tools.DateTimeTool;
 import com.knowledge.assistant.agent.tools.KnowledgeSearchTool;
 import com.knowledge.assistant.agent.tools.KnowledgeStatsTool;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.ToolCallAdvisor;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.ai.model.tool.DefaultToolCallingManager;
-import org.springframework.ai.model.tool.ToolCallingManager;
-import org.springframework.ai.support.ToolCallbacks;
-import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.tool.resolution.StaticToolCallbackResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Arrays;
 
 @Configuration
 public class ReActAgentConfig {
@@ -30,10 +23,16 @@ public class ReActAgentConfig {
             如果不需要工具就能回答，直接回答即可。""";
 
     /**
-     * P0-3: reactChatClient conditional dual-bean — GLM preferred (stable tool-calling),
-     * falls back to Ollama when ZHIPU_API_KEY is absent. Both methods declare the SAME bean
-     * name ("reactChatClient") with mutually-exclusive @ConditionalOnExpression, so exactly
-     * one registers at runtime; reActAgent(@Qualifier("reactChatClient")) always resolves.
+     * P0-3b: reactChatClient uses Spring AI 1.1.x idiomatic tool mounting — defaultTools(@Tool beans)
+     * lets the framework auto-register ToolCallbacks AND enable internal tool execution (the
+     * Thought→Action→Observation loop runs inside ChatModel.call). Replaces the prior hand-built
+     * ToolCallAdvisor + DefaultToolCallingManager + StaticToolCallbackResolver, which failed to
+     * execute tools (GLM's tool_calls came back as <tool_call> text because the execution loop
+     * was never engaged). defaultTools(Object...) accepts @Tool-annotated beans directly.
+     *
+     * Conditional dual-bean: GLM preferred (stable native function calling), Ollama fallback
+     * when ZHIPU_API_KEY absent. Same bean name + mutually-exclusive @ConditionalOnExpression
+     * => exactly one registers; reActAgent(@Qualifier("reactChatClient")) always resolves.
      */
     @Bean("reactChatClient")
     @ConditionalOnExpression("'${spring.ai.zhipuai.api-key:}' != ''")
@@ -57,28 +56,16 @@ public class ReActAgentConfig {
         return buildReactClient(chatModel, searchTool, dateTimeTool, statsTool, calcTool);
     }
 
-    private ChatClient buildReactClient(org.springframework.ai.chat.model.ChatModel chatModel,
+    private ChatClient buildReactClient(ChatModel chatModel,
                                          KnowledgeSearchTool searchTool,
                                          DateTimeTool dateTimeTool,
                                          KnowledgeStatsTool statsTool,
                                          CalculatorTool calcTool) {
-        // Convert @Tool annotated objects to ToolCallback[]
-        ToolCallback[] toolCallbacks = ToolCallbacks.from(searchTool, dateTimeTool, statsTool, calcTool);
-
-        // Build ToolCallingManager with static resolver
-        ToolCallingManager toolCallingManager = DefaultToolCallingManager.builder()
-                .toolCallbackResolver(new StaticToolCallbackResolver(Arrays.asList(toolCallbacks)))
-                .build();
-
-        // Build ToolCallAdvisor
-        ToolCallAdvisor toolCallAdvisor = ToolCallAdvisor.builder()
-                .toolCallingManager(toolCallingManager)
-                .build();
-
-        // Build ChatClient with system prompt and tool call advisor
+        // defaultTools(@Tool beans): framework auto-registers ToolCallbacks and enables
+        // internal tool execution — no manual ToolCallAdvisor/ToolCallingManager needed.
         return ChatClient.builder(chatModel)
                 .defaultSystem(SYSTEM_PROMPT)
-                .defaultAdvisors(toolCallAdvisor)
+                .defaultTools(searchTool, dateTimeTool, statsTool, calcTool)
                 .build();
     }
 
@@ -87,3 +74,4 @@ public class ReActAgentConfig {
         return new ReActAgent(reactChatClient);
     }
 }
+
