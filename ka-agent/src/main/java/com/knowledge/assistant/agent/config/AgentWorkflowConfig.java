@@ -6,21 +6,34 @@ import com.knowledge.assistant.agent.workflow.impl.ParallelizationWorkflow;
 import com.knowledge.assistant.agent.workflow.impl.RoutingWorkflow;
 import com.knowledge.assistant.rag.service.RetrievalService;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 @Slf4j
 @Configuration
-@RequiredArgsConstructor
 public class AgentWorkflowConfig {
 
     private final ChatClient chatClient;
     private final RetrievalService retrievalService;
+
+    /**
+     * Injects the workflow-dedicated ChatClient by qualifier, NOT the @Primary chatClient
+     * (which binds Ollama deepseek-r1 and took ~180s for long Chinese answers — the perf
+     * bottleneck this fixes). Hand-written constructor instead of @RequiredArgsConstructor:
+     * Lombok does not copy @Qualifier onto generated constructor params (no lombok.config
+     * copyableAnnotations entry in this repo), so the qualifier would be silently dropped
+     * and @Primary chatClient injected instead.
+     */
+    public AgentWorkflowConfig(@Qualifier("workflowChatClient") ChatClient chatClient,
+                               RetrievalService retrievalService) {
+        this.chatClient = chatClient;
+        this.retrievalService = retrievalService;
+    }
 
     public WorkflowStep createStep(String name, String systemPrompt) {
         return new ChatClientStep(chatClient, name, systemPrompt);
