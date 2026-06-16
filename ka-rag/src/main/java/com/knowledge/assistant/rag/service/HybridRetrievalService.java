@@ -1,5 +1,7 @@
 package com.knowledge.assistant.rag.service;
 
+import com.knowledge.assistant.rag.config.RerankerConfig;
+import com.knowledge.assistant.rag.rerank.RerankService;
 import com.knowledge.assistant.rag.util.ContentHashUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,8 @@ public class HybridRetrievalService {
     private final VectorStore vectorStore;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final RerankerConfig rerankerConfig;
+    private final RerankService rerankService;
 
     public List<Document> hybridRetrieve(String query) {
         log.info("Hybrid retrieval for query: {}", query);
@@ -39,16 +43,23 @@ public class HybridRetrievalService {
             log.info("Cache hit for query");
             return reconstructDocuments(cached);
         }
+        boolean rerank = rerankerConfig.isEnabled();
+        int recallK = rerank ? rerankerConfig.getRecallTopK() : TOP_K;
+        double threshold = rerank ? rerankerConfig.getRecallThreshold() : SIMILARITY_THRESHOLD;
         List<Document> vectorResults = vectorStore.similaritySearch(
-            SearchRequest.builder().query(query).topK(TOP_K)
-                .similarityThreshold(SIMILARITY_THRESHOLD).build());
-        List<KeywordResult> keywordResults = keywordSearch(query);
-        List<Document> fused = rrfFusion(vectorResults, keywordResults);
-        saveToCache(query, fused);
-        return fused;
+            SearchRequest.builder().query(query).topK(recallK)
+                .similarityThreshold(threshold).build());
+        List<KeywordResult> keywordResults = keywordSearch(query, recallK);
+        List<Document> fused = rrfFusion(vectorResults, keywordResults,
+            rerank ? rerankerConfig.getRecallTopK() : TOP_K);
+        List<Document> result = rerank
+            ? rerankService.rerank(fused, query)
+            : fused.stream().limit(TOP_K).toList();
+        saveToCache(query, result);
+        return result;
     }
 
-    List<KeywordResult> keywordSearch(String query) {
+    List<KeywordResult> keywordSearch(String query, int limit) {
         try {
             Object result = redisTemplate.execute((RedisCallback<Object>) (connection) -> {
                 Jedis jedis = (Jedis) connection.getNativeConnection();
@@ -58,7 +69,7 @@ public class HybridRetrievalService {
                     SafeEncoder.encode(query),
                     SafeEncoder.encode("LIMIT"),
                     SafeEncoder.encode("0"),
-                    SafeEncoder.encode(String.valueOf(TOP_K)));
+                    SafeEncoder.encode(String.valueOf(limit)));
             });
             if (result == null) return Collections.emptyList();
             return parseFtSearchResult(result);
@@ -92,6 +103,10 @@ public class HybridRetrievalService {
     }
 
     List<Document> rrfFusion(List<Document> vectorResults, List<KeywordResult> keywordResults) {
+        return rrfFusion(vectorResults, keywordResults, Integer.MAX_VALUE);
+    }
+
+    List<Document> rrfFusion(List<Document> vectorResults, List<KeywordResult> keywordResults, int limit) {
         Map<String, Double> rrfScores = new HashMap<>();
         Map<String, Document> docMap = new HashMap<>();
         for (int i = 0; i < vectorResults.size(); i++) {
@@ -110,7 +125,7 @@ public class HybridRetrievalService {
         }
         return rrfScores.entrySet().stream()
             .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-            .limit(TOP_K)
+            .limit(limit)
             .map(e -> { Document doc = docMap.get(e.getKey()); doc.getMetadata().put("rrfScore", e.getValue()); return doc; })
             .collect(Collectors.toList());
     }
@@ -128,7 +143,7 @@ public class HybridRetrievalService {
         try {
             String cacheKey = CACHE_PREFIX + ContentHashUtil.sha256(query.getBytes());
             List<CachedResult> results = docs.stream()
-                .map(d -> new CachedResult(d.getId(), d.getMetadata().get("docId") instanceof String s ? s : "", d.getText(), d.getMetadata().get("rrfScore") instanceof Number n ? n.doubleValue() : 0.0))
+                .map(d -> new CachedResult(d.getId(), d.getMetadata().get("docId") instanceof String s ? s : "", d.getText(), effectiveScore(d)))
                 .toList();
             redisTemplate.opsForValue().set(cacheKey, objectMapper.writeValueAsString(results), java.time.Duration.ofSeconds(300));
         } catch (Exception e) { log.warn("Cache write failed: {}", e.getMessage()); }
@@ -136,6 +151,13 @@ public class HybridRetrievalService {
 
     private List<Document> reconstructDocuments(List<CachedResult> cached) {
         return cached.stream().map(c -> new Document(c.chunkId, c.content, Map.of("docId", c.docId, "rrfScore", c.score))).collect(Collectors.toList());
+    }
+
+    private double effectiveScore(Document d) {
+        Object rerank = d.getMetadata().get("rerankScore");
+        if (rerank instanceof Number n) return n.doubleValue();
+        Object rrf = d.getMetadata().get("rrfScore");
+        return rrf instanceof Number m ? m.doubleValue() : 0.0;
     }
 
     public void clearCache() {

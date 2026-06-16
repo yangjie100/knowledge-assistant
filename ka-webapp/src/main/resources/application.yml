@@ -56,6 +56,14 @@ ka:
       default-size: 800
       min-size: 200
       overlap: 100
+    reranker:
+      # Inert-until-configured. Local dev (no TEI) stays off; compose/prod set KA_RAG_RERANKER_ENABLED=true.
+      enabled: ${KA_RAG_RERANKER_ENABLED:false}
+      endpoint: ${TEI_ENDPOINT:http://localhost:8082}
+      recall-top-k: 20
+      recall-threshold: 0.5
+      top-n: 5
+      timeout-seconds: 10
 
 management:
   endpoints:

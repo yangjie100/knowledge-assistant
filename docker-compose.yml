@@ -19,6 +19,25 @@ services:
     volumes:
       - ollama-data:/root/.ollama
 
+  tei:
+    # HuggingFace Text Embeddings Inference: cross-encoder reranker (bge-reranker-v2-m3).
+    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    command: --model-id BAAI/bge-reranker-v2-m3
+    ports:
+      - "8082:80"
+    volumes:
+      - tei-data:/data
+    # GPU: on a 3090Ti host run separately with `docker run --gpus all`, or uncomment below
+    # (requires compose v2 + nvidia container toolkit).
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    restart: unless-stopped
+
   app:
     build: .
     ports:
@@ -33,8 +52,11 @@ services:
       SPRING_AI_OLLAMA_BASE_URL: http://ollama:11434
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PASSWORD: "123456"
+      TEI_ENDPOINT: http://tei:80
+      KA_RAG_RERANKER_ENABLED: "true"
     restart: unless-stopped
 
 volumes:
   redis-data:
   ollama-data:
+  tei-data:
