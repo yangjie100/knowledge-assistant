@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.knowledge.assistant.rag.config.RerankerConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,9 @@ public class RerankClient {
     private final RestTemplate restTemplate;
     private final String endpoint;
 
+    // @Autowired disambiguates from the test-seam constructor below; without it Spring sees two
+    // constructors, picks neither, and fails with "No default constructor found".
+    @Autowired
     public RerankClient(RerankerConfig config) {
         this(buildRestTemplate(config), config.getEndpoint());
     }
