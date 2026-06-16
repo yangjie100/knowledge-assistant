@@ -11,7 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RagEnhancedChatStepTest {
+class ContextAnswerStepTest {
 
     @Mock private ChatClient chatClient;
 
@@ -26,7 +26,7 @@ class RagEnhancedChatStepTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("AI answer");
 
-        RagEnhancedChatStep step = new RagEnhancedChatStep(chatClient, "rag-answer");
+        ContextAnswerStep step = new ContextAnswerStep(chatClient, "rag-answer");
         String result = step.execute("Context: ...\n\nQuestion: test?");
 
         assertThat(result).isEqualTo("AI answer");
@@ -45,7 +45,7 @@ class RagEnhancedChatStepTest {
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("Custom answer");
 
-        RagEnhancedChatStep step = new RagEnhancedChatStep(chatClient, "custom", "Custom prompt");
+        ContextAnswerStep step = new ContextAnswerStep(chatClient, "custom", "Custom prompt");
         step.execute("test");
 
         verify(requestSpec).system("Custom prompt");

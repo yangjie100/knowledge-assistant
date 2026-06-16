@@ -14,7 +14,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
- * Parallel workflow: all steps execute concurrently with the same input, results are merged
+ * Parallel workflow: all steps execute concurrently with the same input, results are merged.
+ * Implements the Parallelization (sectioning / voting) pattern (Anthropic, "Building Effective Agents").
  */
 @Slf4j
 public class ParallelizationWorkflow implements Workflow {

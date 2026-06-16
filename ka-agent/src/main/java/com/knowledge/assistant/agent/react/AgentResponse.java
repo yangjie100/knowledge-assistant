@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ReActResponse {
+public class AgentResponse {
     private String content;
     private List<AgentStep> steps;
     private boolean success;

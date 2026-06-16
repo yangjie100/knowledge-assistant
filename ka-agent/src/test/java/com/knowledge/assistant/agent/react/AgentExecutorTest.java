@@ -10,33 +10,33 @@ import org.springframework.ai.chat.client.ChatClient;
 import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class ReActAgentTest {
+class AgentExecutorTest {
 
     @Mock
     ChatClient chatClient;
 
-    private ReActAgent agent;
+    private AgentExecutor agent;
 
     @BeforeEach
     void setUp() {
-        agent = new ReActAgent(chatClient);
+        agent = new AgentExecutor(chatClient);
     }
 
     @Test
     void shouldThrowOnNullQuestion() {
-        assertThatThrownBy(() -> agent.execute(new ReActRequest(null)))
+        assertThatThrownBy(() -> agent.execute(new AgentRequest(null)))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowOnBlankQuestion() {
-        assertThatThrownBy(() -> agent.execute(new ReActRequest("  ")))
+        assertThatThrownBy(() -> agent.execute(new AgentRequest("  ")))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowOnEmptyQuestion() {
-        assertThatThrownBy(() -> agent.execute(new ReActRequest("")))
+        assertThatThrownBy(() -> agent.execute(new AgentRequest("")))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

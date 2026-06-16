@@ -9,17 +9,24 @@ import reactor.core.publisher.Flux;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Thin facade over a tool-augmented ChatClient (the {@code reactChatClient} bean). The actual
+ * ReAct (Thought→Action→Observation) loop is NOT hand-rolled here — it runs inside Spring AI's
+ * ChatModel, enabled by {@code defaultTools(@Tool)} on the client (see AgentExecutorConfig). This
+ * class only drives a single call and wraps its output into reasoning/answer phases for both the
+ * blocking and the SSE (streaming) response paths.
+ */
 @Slf4j
-public class ReActAgent {
+public class AgentExecutor {
 
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ReActAgent(ChatClient chatClient) {
+    public AgentExecutor(ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 
-    public ReActResponse execute(ReActRequest request) {
+    public AgentResponse execute(AgentRequest request) {
         validate(request);
         List<AgentStep> steps = new ArrayList<>();
         try {
@@ -33,14 +40,14 @@ public class ReActAgent {
 
             steps.add(step("answer", answer));
 
-            return ReActResponse.builder()
+            return AgentResponse.builder()
                     .content(answer)
                     .steps(steps)
                     .success(true)
                     .build();
         } catch (Exception e) {
             log.error("ReAct failed", e);
-            return ReActResponse.builder()
+            return AgentResponse.builder()
                     .success(false)
                     .errorMessage("Agent failed: " + e.getMessage())
                     .steps(steps)
@@ -48,7 +55,7 @@ public class ReActAgent {
         }
     }
 
-    public Flux<String> streamExecute(ReActRequest request) {
+    public Flux<String> streamExecute(AgentRequest request) {
         validate(request);
         return Flux.create(sink -> {
             try {
@@ -68,7 +75,7 @@ public class ReActAgent {
         });
     }
 
-    private void validate(ReActRequest r) {
+    private void validate(AgentRequest r) {
         if (r.question() == null || r.question().isBlank()) {
             throw new IllegalArgumentException("Question must not be blank");
         }

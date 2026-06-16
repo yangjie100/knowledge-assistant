@@ -1,8 +1,8 @@
 package com.knowledge.assistant;
 
-import com.knowledge.assistant.agent.react.ReActAgent;
-import com.knowledge.assistant.agent.react.ReActRequest;
-import com.knowledge.assistant.agent.react.ReActResponse;
+import com.knowledge.assistant.agent.react.AgentExecutor;
+import com.knowledge.assistant.agent.react.AgentRequest;
+import com.knowledge.assistant.agent.react.AgentResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -25,8 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @EnabledIfEnvironmentVariable(named = "ZHIPU_API_KEY", matches = ".+")
-class ReactAgentGlmToolCallingTest {
-    private static final Logger log = LoggerFactory.getLogger(ReactAgentGlmToolCallingTest.class);
+class AgentExecutorGlmToolCallingTest {
+    private static final Logger log = LoggerFactory.getLogger(AgentExecutorGlmToolCallingTest.class);
 
     @Autowired
     @Qualifier("reactChatClient")
@@ -36,7 +36,7 @@ class ReactAgentGlmToolCallingTest {
     ZhiPuAiChatModel zhiPuAiChatModel;
 
     @Autowired
-    ReActAgent reActAgent;
+    AgentExecutor agentExecutor;
 
     @Test
     void reactChatClientIsGlmDriven() {
@@ -57,7 +57,7 @@ class ReactAgentGlmToolCallingTest {
         String isoToday = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);            // 2026-06-15
         String cnToday = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy年M月d日", Locale.CHINA)); // 2026年6月15日
 
-        ReActResponse resp = reActAgent.execute(new ReActRequest("现在是几点？请告诉我当前的日期和时间。"));
+        AgentResponse resp = agentExecutor.execute(new AgentRequest("现在是几点？请告诉我当前的日期和时间。"));
 
         assertThat(resp.isSuccess()).as("ReAct execute success").isTrue();
         String content = resp.getContent();
@@ -73,7 +73,7 @@ class ReactAgentGlmToolCallingTest {
         // Second tool: calculator. 123 * 456 = 56088. Hard for LLM to "know" vs compute;
         // tool invocation should yield exact 56088. GLM may add a thousands separator ("56,088")
         // or render in Chinese numerals ("五万六千零八十八"), so strip commas before asserting.
-        ReActResponse resp = reActAgent.execute(new ReActRequest("请帮我计算 123 乘以 456 等于多少？"));
+        AgentResponse resp = agentExecutor.execute(new AgentRequest("请帮我计算 123 乘以 456 等于多少？"));
 
         assertThat(resp.isSuccess()).as("ReAct execute success").isTrue();
         String content = resp.getContent();

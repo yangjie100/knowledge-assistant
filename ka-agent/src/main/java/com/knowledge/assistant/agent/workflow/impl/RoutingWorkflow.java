@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Routing workflow: uses a router step to classify input, then dispatches to the matching step
+ * Routing workflow: uses a router step to classify input, then dispatches to the matching step.
+ * Implements the Routing pattern (Anthropic, "Building Effective Agents").
  */
 @Slf4j
 public class RoutingWorkflow implements Workflow {

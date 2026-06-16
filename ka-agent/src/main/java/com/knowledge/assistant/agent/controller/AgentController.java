@@ -1,9 +1,9 @@
 package com.knowledge.assistant.agent.controller;
 
 import com.knowledge.assistant.agent.config.AgentWorkflowConfig;
-import com.knowledge.assistant.agent.react.ReActAgent;
-import com.knowledge.assistant.agent.react.ReActRequest;
-import com.knowledge.assistant.agent.react.ReActResponse;
+import com.knowledge.assistant.agent.react.AgentExecutor;
+import com.knowledge.assistant.agent.react.AgentRequest;
+import com.knowledge.assistant.agent.react.AgentResponse;
 import com.knowledge.assistant.agent.workflow.Workflow;
 import com.knowledge.assistant.agent.workflow.WorkflowRequest;
 import com.knowledge.assistant.agent.workflow.WorkflowResponse;
@@ -19,7 +19,7 @@ import reactor.core.publisher.Flux;
 public class AgentController {
 
     private final AgentWorkflowConfig agentWorkflowConfig;
-    private final ReActAgent reActAgent;
+    private final AgentExecutor agentExecutor;
 
     @PostMapping("/chain")
     public Result<WorkflowResponse> chain(@RequestBody WorkflowRequest request) {
@@ -57,13 +57,13 @@ public class AgentController {
     }
 
     @PostMapping("/react")
-    public Result<ReActResponse> react(@RequestBody ReActRequest request) {
-        ReActResponse response = reActAgent.execute(request);
+    public Result<AgentResponse> react(@RequestBody AgentRequest request) {
+        AgentResponse response = agentExecutor.execute(request);
         return response.isSuccess() ? Result.ok(response) : Result.fail(response.getErrorMessage());
     }
 
     @PostMapping(value = "/react/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> reactStream(@RequestBody ReActRequest request) {
-        return reActAgent.streamExecute(request);
+    public Flux<String> reactStream(@RequestBody AgentRequest request) {
+        return agentExecutor.streamExecute(request);
     }
 }

@@ -30,8 +30,8 @@ public class AgentWorkflowConfig {
         return new KnowledgeSearchStep(retrievalService, name);
     }
 
-    public WorkflowStep createRagChatStep(String name, String systemPrompt) {
-        return new RagEnhancedChatStep(chatClient, name, systemPrompt);
+    public WorkflowStep createContextAnswerStep(String name, String systemPrompt) {
+        return new ContextAnswerStep(chatClient, name, systemPrompt);
     }
 
     public Workflow createChainWorkflow(List<WorkflowStep> steps) {
@@ -77,7 +77,7 @@ public class AgentWorkflowConfig {
     public Workflow buildRagChain() {
         List<WorkflowStep> steps = List.of(
                 createSearchStep("knowledge-search"),
-                createRagChatStep("rag-answer", "你是一个知识库助手。根据提供的检索上下文回答用户问题。如果上下文中没有相关信息，请诚实回答不知道。回答使用中文。")
+                createContextAnswerStep("rag-answer", "你是一个知识库助手。根据提供的检索上下文回答用户问题。如果上下文中没有相关信息，请诚实回答不知道。回答使用中文。")
         );
         return createChainWorkflow(steps);
     }
@@ -87,7 +87,7 @@ public class AgentWorkflowConfig {
 
         List<WorkflowStep> knowledgeSteps = List.of(
                 createSearchStep("knowledge-search"),
-                createRagChatStep("knowledge-answer", "根据检索到的上下文回答知识库问题。回答使用中文。")
+                createContextAnswerStep("knowledge-answer", "根据检索到的上下文回答知识库问题。回答使用中文。")
         );
         stepMap.put("knowledge", new ChainStep("knowledge-chain", knowledgeSteps));
         stepMap.put("chat", createStep("chat", "你是一个友好的对话助手。自然地回答用户问题。回答使用中文。"));

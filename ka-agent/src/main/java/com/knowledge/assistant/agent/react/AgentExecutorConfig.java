@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ReActAgentConfig {
+public class AgentExecutorConfig {
 
     private static final String SYSTEM_PROMPT = """
             你是一个智能助手，可以调用工具来辅助回答问题。
@@ -32,7 +32,7 @@ public class ReActAgentConfig {
      *
      * Conditional dual-bean: GLM preferred (stable native function calling), Ollama fallback
      * when ZHIPU_API_KEY absent. Same bean name + mutually-exclusive @ConditionalOnExpression
-     * => exactly one registers; reActAgent(@Qualifier("reactChatClient")) always resolves.
+     * => exactly one registers; agentExecutor(@Qualifier("reactChatClient")) always resolves.
      */
     @Bean("reactChatClient")
     @ConditionalOnExpression("'${spring.ai.zhipuai.api-key:}' != ''")
@@ -70,8 +70,8 @@ public class ReActAgentConfig {
     }
 
     @Bean
-    public ReActAgent reActAgent(@Qualifier("reactChatClient") ChatClient reactChatClient) {
-        return new ReActAgent(reactChatClient);
+    public AgentExecutor agentExecutor(@Qualifier("reactChatClient") ChatClient reactChatClient) {
+        return new AgentExecutor(reactChatClient);
     }
 }
 

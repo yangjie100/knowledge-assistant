@@ -1,4 +1,4 @@
 package com.knowledge.assistant.agent.react;
 
-public record ReActRequest(String question) {
+public record AgentRequest(String question) {
 }
