@@ -24,3 +24,6 @@ out/
 .dolt/
 *.db
 .beads-credential-key
+
+# Python cache
+__pycache__/

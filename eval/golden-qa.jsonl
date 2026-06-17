@@ -1,0 +1,10 @@
+{"id":"q01","question":"knowledge-assistant 项目使用什么作为向量存储？","expected":"Redis VectorStore","tags":["架构"]}
+{"id":"q02","question":"项目用哪个组件提供 LLM 推理能力？","expected":"Ollama（本地模型，如 qwen2.5/deepseek）","tags":["架构"]}
+{"id":"q03","question":"ka-rag 模块的主要职责是什么？","expected":"RAG 引擎：负责文档加载、切分、嵌入和检索","tags":["模块"]}
+{"id":"q04","question":"文档切分使用什么方法？","expected":"TokenTextSplitter，按 token 数切分，overlap 保留上下文连续性","tags":["RAG"]}
+{"id":"q05","question":"检索服务默认返回多少个文档片段，相似度阈值是多少？","expected":"top-K=5，相似度阈值 0.7","tags":["RAG"]}
+{"id":"q06","question":"项目的对话记忆是如何实现的？","expected":"InMemoryChatMemory，按 conversationId 隔离，通过 MessageChatMemoryAdvisor 集成","tags":["对话"]}
+{"id":"q07","question":"knowledge-assistant 支持哪些文档格式上传？","expected":"pdf、txt、md、html 四种格式","tags":["RAG"]}
+{"id":"q08","question":"RAG 系统从上传到存入向量库的关键流程是什么？","expected":"上传文档 → 解析 → 切分 → 嵌入 → 存入 Redis VectorStore","tags":["RAG"]}
+{"id":"q09","question":"当上下文中没有相关信息时，系统应该如何回答？","expected":"system prompt 要求诚实回答不知道，不要编造","tags":["对话"]}
+{"id":"q10","question":"项目最初划分为哪几个 Maven 模块？","expected":"ka-common、ka-rag、ka-chat、ka-admin、ka-webapp 五个模块","tags":["模块"]}

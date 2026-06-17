@@ -1,0 +1,192 @@
+{
+  "summary": {
+    "label": "chinese-tokenizer",
+    "model": "glm-5.2",
+    "total": 10,
+    "scored": 10,
+    "avg_score": 7.8,
+    "max": 80
+  },
+  "results": [
+    {
+      "id": "q01",
+      "question": "knowledge-assistant 项目使用什么作为向量存储？",
+      "expected": "Redis VectorStore",
+      "tags": [
+        "架构"
+      ],
+      "answer": "根据提供的上下文，knowledge-assistant 项目使用 **Redis VectorStore** 作为向量存储。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确无误，完全切题，完整覆盖了参考要点，且基于上下文作答无臆造。"
+      },
+      "rag_seconds": 10.7
+    },
+    {
+      "id": "q02",
+      "question": "项目用哪个组件提供 LLM 推理能力？",
+      "expected": "Ollama（本地模型，如 qwen2.5/deepseek）",
+      "tags": [
+        "架构"
+      ],
+      "answer": "根据提供的上下文，项目使用 **Ollama** 组件提供 LLM 推理能力（具体使用的是本地的 qwen2.5 或 deepseek 模型）。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "回答与参考要点完全一致，准确指出了Ollama组件及具体本地模型，事实正确，完全切题且无臆造。"
+      },
+      "rag_seconds": 5.9
+    },
+    {
+      "id": "q03",
+      "question": "ka-rag 模块的主要职责是什么？",
+      "expected": "RAG 引擎：负责文档加载、切分、嵌入和检索",
+      "tags": [
+        "模块"
+      ],
+      "answer": "根据提供的上下文，`ka-rag` 模块作为系统的 RAG（检索增强生成）引擎，其主要职责包括以下几个方面：\n\n1. **文档加载**：通过 `DocumentLoader` 接口及其实现类，支持加载多种格式的文档，包括 `.pdf`、`.txt`、`.md` 和 `.html`。\n2. **文档切分**：使用 `TokenTextSplitter` 将加载的文档按 token 数量切分为文本块，并保留重叠部分以维持上下文的连续性。\n3. **嵌入服务**：负责将文档切分后，调用 Ollama Embedding 将文本块向量化，并附带元数据存入 Redis VectorStore 中。\n4. **检索服务**：接收用户的查询请求，将其向量化后在 Redis 中进行相似度检索，返回符合阈值要求的相关文档片段。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "回答准确、完整且完全切题，详细阐述了ka-rag模块作为RAG引擎的四大核心职责（文档加载、切分、嵌入和检索），完全覆盖参考要点，无明显臆造。"
+      },
+      "rag_seconds": 14.9
+    },
+    {
+      "id": "q04",
+      "question": "文档切分使用什么方法？",
+      "expected": "TokenTextSplitter，按 token 数切分，overlap 保留上下文连续性",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "根据提供的上下文，文档切分使用的是 **TokenTextSplitter** 方法。\n\n具体细节如下：\n- 按 token 数进行切分。\n- 设置了 overlap（重叠）以保留上下文的连续性。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确指出了切分方法为TokenTextSplitter，并完整覆盖了按token数切分及overlap保留上下文连续性的所有要点，完全切题且有语料支撑。"
+      },
+      "rag_seconds": 16.2
+    },
+    {
+      "id": "q05",
+      "question": "检索服务默认返回多少个文档片段，相似度阈值是多少？",
+      "expected": "top-K=5，相似度阈值 0.7",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "根据检索服务的设计，默认返回 **5 个文档片段**（即 top-K = 5），相似度阈值为 **0.7**。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答与参考要点完全一致，准确指出top-K=5和相似度阈值0.7，完全切题且无臆造内容。"
+      },
+      "rag_seconds": 4.9
+    },
+    {
+      "id": "q06",
+      "question": "项目的对话记忆是如何实现的？",
+      "expected": "InMemoryChatMemory，按 conversationId 隔离，通过 MessageChatMemoryAdvisor 集成",
+      "tags": [
+        "对话"
+      ],
+      "answer": "根据设计文档，项目的对话记忆实现如下：\n\n## 对话记忆实现\n\n**核心机制：**\n- 使用 `InMemoryChatMemory`（基于内存的对话记忆）\n- 按 `conversationId` 进行隔离，每个对话会话保持独立的记忆上下文\n- 通过 `MessageChatMemoryAdvisor`（Spring AI 的 Advisor API）集成到 ChatClient 请求链中\n\n## 在 ChatService 流程中的位置\n\n组装 Prompt 时，会按以下顺序拼接：\n\n```\nSystem Prompt + Context（检索到的文档）+ 历史（对话记忆）+ 当前问题\n```\n\n即每次回答用户问题时，会通过 `conversationId` 取出该会话的历史消息，作为上下文一并提交给 LLM，从而实现多轮对话的连贯性。\n\n## 相关管理 API\n\n| 方法 | 路径 | 功能 |\n|------|------|------|\n| GET | `/api/chat/history/{conversationId}` | 查询对话历史 |\n| DELETE | `/api/chat/history/{conversationId}` | 清空对话历史 |\n\n---\n\n⚠️ **需要注意的一点：** 由于使用的是 `InMemoryChatMemory`（内存存储），应用重启后对话历史会丢失。如果需要持久化记忆，设计文档中未提及进一步的持久化方案。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确无误地涵盖了所有的参考要点（InMemoryChatMemory、按conversationId隔离、MessageChatMemoryAdvisor集成），并且补充了Prompt组装顺序、管理API和内存局限性等高度相关的背景信息，完全切题且无臆造。"
+      },
+      "rag_seconds": 11.3
+    },
+    {
+      "id": "q07",
+      "question": "knowledge-assistant 支持哪些文档格式上传？",
+      "expected": "pdf、txt、md、html 四种格式",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "根据提供的上下文，knowledge-assistant 支持以下 4 种文档格式上传：\n\n1. **.pdf** 格式（由 PdfDocumentLoader 支持）\n2. **.txt** 格式（由 TextDocumentLoader 支持）\n3. **.md** 格式（由 MarkdownDocumentLoader 支持）\n4. **.html** 格式（由 HtmlDocumentLoader 支持）",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确列出了pdf、txt、md、html四种文档格式，完全切题且覆盖了参考要点的全部内容，没有事实错误和臆造。"
+      },
+      "rag_seconds": 7.6
+    },
+    {
+      "id": "q08",
+      "question": "RAG 系统从上传到存入向量库的关键流程是什么？",
+      "expected": "上传文档 → 解析 → 切分 → 嵌入 → 存入 Redis VectorStore",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "# RAG 系统关键流程：上传到存入向量库\n\n根据设计文档，RAG 系统的关键流程如下：\n\n```\n上传文档 -> 解析 -> 切分 -> 嵌入 -> 存入 Redis VectorStore\n```\n\n## 各步骤详细说明\n\n### 1️⃣ 上传文档\n系统通过 `DocumentLoader` 接口接收上传的文档，支持 4 种格式：\n\n| 实现类 | 支持格式 |\n|--------|---------|\n| `PdfDocumentLoader` | .pdf |\n| `TextDocumentLoader` | .txt |\n| `MarkdownDocumentLoader` | .md |\n| `HtmlDocumentLoader` | .html |\n\n### 2️⃣ 解析\n根据文档类型调用对应的加载器进行解析。\n\n### 3️⃣ 切分\n使用 `TokenTextSplitter` 按照配置的参数将文档切分为 chunk：\n- **defaultSize** = 800\n- **minSize** = 200\n- **overlap** = 100（用于保留上下文连续性）\n\n### 4️⃣ 嵌入\n调用 **Ollama Embedding** 将切分后的 chunk 文本转换为向量。\n\n### 5️⃣ 存入 Redis VectorStore\n将向量数据存入 Redis VectorStore，同时为每个文档记录**元数据**：\n- `source` — 来源\n- `title` — 标题\n- `chunkIndex` — 分片索引\n\n此外，根据 Day 4 的设计，`EmbeddingService` 还会将 chunk 文本存储到 Redis Hash 中（`chunk:text:{chunkId} -> {content, docId}`），用于支持后续的**混合检索（Hybrid Retrieval）**。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答完整且准确地包含了参考要点中的全部五个关键流程（上传、解析、切分、嵌入、存入Redis），完全切题，且补充的扩展细节合理，无明显臆造。"
+      },
+      "rag_seconds": 13.0
+    },
+    {
+      "id": "q09",
+      "question": "当上下文中没有相关信息时，系统应该如何回答？",
+      "expected": "system prompt 要求诚实回答不知道，不要编造",
+      "tags": [
+        "对话"
+      ],
+      "answer": "根据 System Prompt 的设计要求，系统应该**诚实回答不知道**。\n\n具体来说，在 `ka-chat` 模块的 System Prompt 中明确规定：\n\n> 你是一个知识库助手。根据提供的上下文文档回答用户问题。**如果上下文中没有相关信息，请诚实回答不知道。**\n\n这意味着当检索到的文档片段中不包含与用户问题相关的内容时，助手不会编造答案，而是诚实地告知用户它不知道，从而避免产生幻觉（hallucination）。",
+      "score": 6,
+      "detail": {
+        "accuracy": 1,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 1,
+        "reason": "系统回答准确且完整地覆盖了参考要点并完全切题，但自行捏造了'ka-chat模块'以及具体的System Prompt原文引用，存在轻微的事实编造和语料外的臆造内容，故准确性与接地性各扣1分。"
+      },
+      "rag_seconds": 5.1
+    },
+    {
+      "id": "q10",
+      "question": "项目最初划分为哪几个 Maven 模块？",
+      "expected": "ka-common、ka-rag、ka-chat、ka-admin、ka-webapp 五个模块",
+      "tags": [
+        "模块"
+      ],
+      "answer": "根据提供的上下文，项目最初划分为以下 5 个 Maven 模块：\n\n1. **ka-common**：公共模型、工具类、异常处理。\n2. **ka-rag**：RAG 引擎，负责文档加载、切分、嵌入和检索。\n3. **ka-chat**：对话管理，包含 ChatClient、记忆以及流式输出功能。\n4. **ka-admin**：管理 API，用于知识库和对话的 CRUD 操作。\n5. **ka-webapp**：启动模块，包含前端页面和应用的启动类。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确、完整地列出了 ka-common、ka-rag、ka-chat、ka-admin、ka-webapp 五个模块，完全切题且符合参考要点。"
+      },
+      "rag_seconds": 45.0
+    }
+  ]
+}

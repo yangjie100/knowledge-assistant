@@ -2,6 +2,7 @@ package com.knowledge.assistant.rag.service;
 
 import com.knowledge.assistant.rag.config.RerankerConfig;
 import com.knowledge.assistant.rag.rerank.RerankService;
+import com.knowledge.assistant.rag.util.ChineseTokenizer;
 import com.knowledge.assistant.rag.util.ContentHashUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class HybridRetrievalService {
     private final ObjectMapper objectMapper;
     private final RerankerConfig rerankerConfig;
     private final RerankService rerankService;
+    private final ChineseTokenizer chineseTokenizer;
 
     public List<Document> hybridRetrieve(String query) {
         log.info("Hybrid retrieval for query: {}", query);
@@ -60,13 +62,22 @@ public class HybridRetrievalService {
     }
 
     List<KeywordResult> keywordSearch(String query, int limit) {
+        // Chinese sentences carry no whitespace, so RediSearch's default tokenizer turns the
+        // whole query into one unusable token (root cause of q02/q06 zero BM25 recall). Segment
+        // the query into keywords and build an OR expression so any single keyword surfacing a
+        // document is enough. Fall back to the raw query when segmentation yields nothing.
+        String segmented = chineseTokenizer.toRediSearchQuery(query);
+        String searchQuery = segmented != null ? segmented : query;
+        if (segmented != null) {
+            log.debug("Keyword search segmented '{}' -> '{}'", query, searchQuery);
+        }
         try {
             Object result = redisTemplate.execute((RedisCallback<Object>) (connection) -> {
                 Jedis jedis = (Jedis) connection.getNativeConnection();
                 return jedis.sendCommand(
                     () -> SafeEncoder.encode("FT.SEARCH"),
                     SafeEncoder.encode("chunk-idx"),
-                    SafeEncoder.encode(query),
+                    SafeEncoder.encode(searchQuery),
                     SafeEncoder.encode("LIMIT"),
                     SafeEncoder.encode("0"),
                     SafeEncoder.encode(String.valueOf(limit)));

@@ -41,6 +41,14 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-jsoup-document-reader</artifactId>
         </dependency>
+        <!-- Chinese word segmentation for BM25 keyword search (Plan B fix).
+             RediSearch's default whitespace tokenizer can't segment a raw Chinese
+             sentence; jieba segments the query into keywords before FT.SEARCH. -->
+        <dependency>
+            <groupId>com.huaban</groupId>
+            <artifactId>jieba-analysis</artifactId>
+            <version>1.0.2</version>
+        </dependency>
     </dependencies>
 
 </project>

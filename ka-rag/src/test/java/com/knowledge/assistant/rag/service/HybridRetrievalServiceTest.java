@@ -9,6 +9,7 @@ import org.springframework.ai.document.Document;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knowledge.assistant.rag.config.RerankerConfig;
 import com.knowledge.assistant.rag.rerank.RerankService;
+import com.knowledge.assistant.rag.util.ChineseTokenizer;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -32,7 +33,7 @@ class HybridRetrievalServiceTest {
     private final RerankerConfig rerankerConfig = new RerankerConfig();
 
     private HybridRetrievalService createService() {
-        return new HybridRetrievalService(vectorStore, redisTemplate, objectMapper, rerankerConfig, rerankService);
+        return new HybridRetrievalService(vectorStore, redisTemplate, objectMapper, rerankerConfig, rerankService, new ChineseTokenizer());
     }
 
     @Test
