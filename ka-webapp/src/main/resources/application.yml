@@ -51,6 +51,15 @@ spring:
       max-request-size: 10MB
 
 ka:
+  embedding:
+    # Embedding provider switch (Plan C). ollama = nomic-embed-text 768d (default, local zero-cost).
+    # tei = bge-m3 1024d via TEI /embed (Chinese-friendly, needs second TEI container on tei.endpoint).
+    # provider=tei activates TeiEmbeddingConfig which supplies a @Primary EmbeddingModel; the unused
+    # OllamaEmbeddingModel autoconfig stays inert (same side-by-side pattern as the chat models).
+    provider: ${KA_EMBEDDING_PROVIDER:ollama}
+    tei:
+      endpoint: ${KA_EMBEDDING_TEI_ENDPOINT:http://localhost:8084}
+      timeout-seconds: 60
   rag:
     chunk:
       default-size: 800
