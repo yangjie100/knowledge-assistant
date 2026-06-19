@@ -1,0 +1,68 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: ka-mcp-server
+  ai:
+    # Same model/embedding/vectorstore setup as ka-webapp: ka-mcp shares the RAG stack because
+    # KnowledgeSearchTool delegates to RetrievalService. See ka-webapp/application.yml for the
+    # full rationale of each line (exact-match spring.ai.model.*, Coding endpoint, etc).
+    model:
+      embedding: ollama
+    ollama:
+      base-url: http://localhost:11434
+      embedding:
+        options:
+          model: nomic-embed-text
+    zhipuai:
+      base-url: ${ZHIPU_BASE_URL:https://open.bigmodel.cn/api/coding/paas}
+      api-key: ${ZHIPU_API_KEY:}
+      chat:
+        options:
+          model: ${ZHIPU_MODEL:glm-5.2}
+          temperature: 0.7
+    vectorstore:
+      redis:
+        initialize-schema: true
+        index-name: knowledge_assistant
+        prefix: "ka_"
+    mcp:
+      server:
+        # SSE transport (webmvc). MCP clients connect to GET /sse, then POST tool calls to /mcp/message.
+        name: ka-mcp-server
+        version: 1.0.0
+        type: SYNC
+        capabilities:
+          tool: true
+  data:
+    redis:
+      client-type: jedis
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD:123456}
+
+ka:
+  embedding:
+    provider: ${KA_EMBEDDING_PROVIDER:ollama}
+    tei:
+      endpoint: ${KA_EMBEDDING_TEI_ENDPOINT:http://localhost:8084}
+      timeout-seconds: 60
+  rag:
+    chunk:
+      default-size: 800
+      min-size: 200
+      overlap: 100
+    reranker:
+      enabled: ${KA_RAG_RERANKER_ENABLED:false}
+      endpoint: ${TEI_ENDPOINT:http://localhost:8082}
+      recall-top-k: 20
+      recall-threshold: 0.5
+      top-n: 5
+      timeout-seconds: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

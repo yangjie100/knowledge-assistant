@@ -25,6 +25,7 @@
         <module>ka-agent</module>
         <module>ka-admin</module>
         <module>ka-webapp</module>
+        <module>ka-mcp</module>
     </modules>
 
     <properties>

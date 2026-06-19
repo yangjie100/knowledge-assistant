@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.knowledge</groupId>
+        <artifactId>knowledge-assistant</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>ka-mcp</artifactId>
+    <name>KA MCP Server</name>
+    <description>Standalone MCP Server exposing ka-agent @Tool beans (SSE transport, webmvc)</description>
+
+    <dependencies>
+        <!-- Reuse ka-agent @Tool beans (search/stats/datetime/calc) and the RAG stack they depend on.
+             This is the single source of tool truth — no duplicated implementations. -->
+        <dependency>
+            <groupId>com.knowledge</groupId>
+            <artifactId>ka-agent</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- MCP Server with Spring MVC (servlet / SSE) transport. Same servlet stack as the global
+             starter-web, so no webflux conflict. Per Spring AI docs: when starter-web is present,
+             use the webmvc starter (NOT webflux). See Spring AI issue #4055. -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
