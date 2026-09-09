@@ -1,13 +1,16 @@
 services:
   redis:
     image: redis:7-alpine
-    command: redis-server --requirepass 123456 --appendonly yes
+    # M-3: password comes from .env (gitignored, see .env.example) — no hardcoded secret.
+    command: redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env (see .env.example)} --appendonly yes
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "123456", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -41,7 +44,9 @@ services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      # H-1: loopback-only binding — the API is unauthenticated by default; without this
+      # every interface (LAN included) could reach it.
+      - "127.0.0.1:8080:8080"
     depends_on:
       redis:
         condition: service_healthy
@@ -51,7 +56,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_AI_OLLAMA_BASE_URL: http://ollama:11434
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PASSWORD: "123456"
+      SPRING_DATA_REDIS_PASSWORD: "${REDIS_PASSWORD}"
       TEI_ENDPOINT: http://tei:80
       KA_RAG_RERANKER_ENABLED: "true"
     restart: unless-stopped

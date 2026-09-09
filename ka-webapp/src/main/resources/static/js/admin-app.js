@@ -1,3 +1,11 @@
+// H-1: attach the API key when one is configured server-side (KA_API_KEY).
+// Set it once via localStorage.setItem('ka_api_key', '<your key>'). Mirrors the
+// helper in chat-app.js — each page loads its own script, no shared bundle.
+function apiAuth() {
+    const key = localStorage.getItem('ka_api_key');
+    return key ? { 'X-API-Key': key } : {};
+}
+
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const uploadProgress = document.getElementById("uploadProgress");
@@ -30,7 +38,7 @@ uploadBtn.addEventListener("click", async function() {
         try {
             uploadMsg.textContent = "Uploading " + (i+1) + "/" + files.length + ": " + file.name;
             progressBar.style.width = ((i+1) / files.length * 100) + "%";
-            const res = await fetch("/api/knowledge/upload", { method: "POST", body: formData });
+            const res = await fetch("/api/knowledge/upload", { method: "POST", body: formData, headers: apiAuth() });
             const data = await res.json();
             if (data.success) uploaded++; else failed++;
         } catch (err) { failed++; }
@@ -45,7 +53,7 @@ uploadBtn.addEventListener("click", async function() {
 
 async function loadStats() {
     try {
-        const res = await fetch("/api/knowledge/stats");
+        const res = await fetch("/api/knowledge/stats", { headers: apiAuth() });
         const data = await res.json();
         if (data.success && data.data) {
             statDocs.textContent = data.data.totalDocuments || 0;
@@ -63,7 +71,7 @@ async function loadStats() {
 
 async function loadDocuments() {
     try {
-        const res = await fetch("/api/knowledge/list");
+        const res = await fetch("/api/knowledge/list", { headers: apiAuth() });
         const data = await res.json();
         if (data.success && data.data) renderDocuments(data.data);
         else docList.innerHTML = '<p class="text-gray-400 text-sm">Failed to load.</p>';
@@ -129,7 +137,7 @@ batchDeleteBtn.addEventListener("click", async function() {
     try {
         const res = await fetch("/api/knowledge/batch", {
             method: "DELETE",
-            headers: { "Content-Type": "application/json" },
+            headers: Object.assign({ "Content-Type": "application/json" }, apiAuth()),
             body: JSON.stringify(ids)
         });
         const data = await res.json();
@@ -141,7 +149,7 @@ batchDeleteBtn.addEventListener("click", async function() {
 async function deleteDoc(id) {
     if (!confirm("Delete this document?")) return;
     try {
-        const res = await fetch("/api/knowledge/" + id, { method: "DELETE" });
+        const res = await fetch("/api/knowledge/" + id, { method: "DELETE", headers: apiAuth() });
         const data = await res.json();
         if (data.success) { loadDocuments(); loadStats(); }
         else alert("Failed: " + (data.message || "Unknown"));

@@ -27,3 +27,6 @@ out/
 
 # Python cache
 __pycache__/
+
+# Secrets (M-3)
+.env

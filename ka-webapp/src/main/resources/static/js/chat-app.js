@@ -5,6 +5,16 @@ function generateUUID() {
     });
 }
 
+// H-1: attach the API key when one is configured server-side (KA_API_KEY).
+// Set it once via localStorage.setItem('ka_api_key', '<your key>'). The helper also
+// mirrors it into a SameSite=Strict cookie so the EventSource SSE stream — which
+// cannot send custom headers — passes the API-key gate.
+function apiAuth() {
+    const key = localStorage.getItem('ka_api_key');
+    document.cookie = key ? 'ka_api_key=' + encodeURIComponent(key) + '; path=/; SameSite=Strict' : '';
+    return key ? { 'X-API-Key': key } : {};
+}
+
 let conversationId = generateUUID();
 let streamMode = true;
 let currentEventSource = null;
@@ -127,7 +137,7 @@ function setLoading(loading) {
 function sendSync(question) {
     fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: Object.assign({ 'Content-Type': 'application/json' }, apiAuth()),
         body: JSON.stringify({ question: question, conversationId: conversationId })
     })
     .then(res => res.json())
@@ -149,6 +159,7 @@ function sendSync(question) {
 }
 
 function sendStream(question) {
+    apiAuth(); // sync cookie for EventSource (no custom headers possible)
     const bubble = appendMessage('assistant', '');
     const url = '/api/chat/stream?question=' + encodeURIComponent(question)
         + '&conversationId=' + encodeURIComponent(conversationId);
@@ -204,7 +215,7 @@ newChatBtn.addEventListener('click', function() {
 // Conversation management
 async function loadConversations() {
     try {
-        const res = await fetch('/api/chat/conversations');
+        const res = await fetch('/api/chat/conversations', { headers: apiAuth() });
         const data = await res.json();
         if (data.success && data.data) renderConversations(data.data);
     } catch(e) { console.error('Failed to load conversations:', e); }
@@ -239,7 +250,7 @@ async function switchConversation(convId) {
     updateConvDisplay();
     messagesEl.innerHTML = '';
     try {
-        const res = await fetch('/api/chat/history/' + convId);
+        const res = await fetch('/api/chat/history/' + convId, { headers: apiAuth() });
         const data = await res.json();
         if (data.success && data.data) {
             data.data.forEach(function(msg) {
@@ -259,7 +270,7 @@ async function switchConversation(convId) {
 async function deleteConversation(convId) {
     if (!confirm('Delete this conversation?')) return;
     try {
-        await fetch('/api/chat/conversations/' + convId, { method: 'DELETE' });
+        await fetch('/api/chat/conversations/' + convId, { method: 'DELETE', headers: apiAuth() });
         if (convId === conversationId) {
             conversationId = generateUUID();
             updateConvDisplay();
