@@ -7,7 +7,6 @@ import com.knowledge.assistant.agent.workflow.WorkflowStep;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Routing workflow: uses a router step to classify input, then dispatches to the matching step.

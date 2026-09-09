@@ -1,6 +1,5 @@
 package com.knowledge.assistant.rag.util;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
