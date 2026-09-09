@@ -1,5 +1,6 @@
 package com.knowledge.assistant.rag.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knowledge.assistant.rag.loader.DocumentLoaderFactory;
 import com.knowledge.assistant.rag.splitter.DocumentSplitter;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.springframework.data.redis.core.ValueOperations;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -30,6 +32,8 @@ class EmbeddingServiceTest {
     @Mock private HashOperations<String, Object, Object> hashOperations;
     @Mock private ValueOperations<String, String> valueOperations;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Test
     void embedDocument() {
         Document doc = new Document("test content");
@@ -40,7 +44,7 @@ class EmbeddingServiceTest {
         when(redisTemplate.opsForHash()).thenReturn(hashOperations);
         when(valueOperations.get(startsWith("doc:hash:"))).thenReturn(null);
 
-        EmbeddingService service = new EmbeddingService(vectorStore, loaderFactory, splitter, redisTemplate);
+        EmbeddingService service = new EmbeddingService(vectorStore, loaderFactory, splitter, redisTemplate, objectMapper);
         EmbedResult result = service.embed("test content".getBytes(StandardCharsets.UTF_8), "test.txt");
 
         assertThat(result.docId()).isNotNull();
@@ -55,7 +59,7 @@ class EmbeddingServiceTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get(startsWith("doc:hash:"))).thenReturn("existing-doc-id");
 
-        EmbeddingService service = new EmbeddingService(vectorStore, loaderFactory, splitter, redisTemplate);
+        EmbeddingService service = new EmbeddingService(vectorStore, loaderFactory, splitter, redisTemplate, objectMapper);
         EmbedResult result = service.embed("duplicate".getBytes(StandardCharsets.UTF_8), "dup.txt");
 
         assertThat(result.docId()).isEqualTo("existing-doc-id");
@@ -63,5 +67,39 @@ class EmbeddingServiceTest {
         assertThat(result.duplicate()).isTrue();
         verifyNoInteractions(vectorStore);
         verifyNoInteractions(loaderFactory);
+    }
+
+    @Test
+    void deleteByDocIdRemovesContentHashIndexKey() {
+        // H-2: doc:hash:<sha256> must be cleaned on delete, otherwise re-uploading
+        // identical content is forever flagged DUPLICATE with chunkCount=0.
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("doc:meta:doc-1"))
+                .thenReturn("{\"id\":\"doc-1\",\"contentHash\":\"abc123\"}");
+        when(redisTemplate.opsForSet()).thenReturn(setOperations);
+        when(setOperations.members("doc:chunks:doc-1")).thenReturn(Set.of("chunk-1"));
+
+        EmbeddingService service = new EmbeddingService(vectorStore, loaderFactory, splitter, redisTemplate, objectMapper);
+        service.deleteByDocId("doc-1");
+
+        verify(redisTemplate).delete("doc:hash:abc123");
+        verify(redisTemplate).delete("chunk:text:chunk-1");
+        verify(redisTemplate).delete("doc:chunks:doc-1");
+    }
+
+    @Test
+    void deleteByDocIdToleratesMissingMeta() {
+        // Legacy docs may lack meta or contentHash — deletion must not break, and no
+        // doc:hash key deletion should be attempted blindly.
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("doc:meta:doc-2")).thenReturn(null);
+        when(redisTemplate.opsForSet()).thenReturn(setOperations);
+        when(setOperations.members("doc:chunks:doc-2")).thenReturn(Set.of());
+
+        EmbeddingService service = new EmbeddingService(vectorStore, loaderFactory, splitter, redisTemplate, objectMapper);
+        service.deleteByDocId("doc-2");
+
+        verify(redisTemplate, never()).delete(startsWith("doc:hash:"));
+        verify(redisTemplate).delete("doc:chunks:doc-2");
     }
 }

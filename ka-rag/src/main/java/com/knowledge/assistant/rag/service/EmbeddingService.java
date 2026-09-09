@@ -1,5 +1,8 @@
 package com.knowledge.assistant.rag.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knowledge.assistant.rag.loader.DocumentLoaderFactory;
 import com.knowledge.assistant.rag.splitter.DocumentSplitter;
 import com.knowledge.assistant.rag.util.ContentHashUtil;
@@ -21,11 +24,13 @@ public class EmbeddingService {
     private static final String CHUNK_KEY_PREFIX = "doc:chunks:";
     private static final String HASH_KEY_PREFIX = "doc:hash:";
     private static final String CHUNK_TEXT_PREFIX = "chunk:text:";
+    private static final String META_KEY_PREFIX = "doc:meta:";
 
     private final VectorStore vectorStore;
     private final DocumentLoaderFactory loaderFactory;
     private final DocumentSplitter splitter;
     private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
 
     public EmbedResult embed(byte[] content, String filename) {
         log.info("Embedding document: {}", filename);
@@ -63,6 +68,13 @@ public class EmbeddingService {
 
     public void deleteByDocId(String docId) {
         log.info("Deleting document vectors: {}", docId);
+        // H-2 fix: drop the content-hash index key BEFORE anything else (reading it from
+        // doc:meta while it still exists), otherwise re-uploading identical content hits
+        // the stale hash key and is forever flagged DUPLICATE with chunkCount=0.
+        String contentHash = readContentHash(docId);
+        if (contentHash != null) {
+            redisTemplate.delete(HASH_KEY_PREFIX + contentHash);
+        }
         String key = CHUNK_KEY_PREFIX + docId;
         Set<String> chunkIds = redisTemplate.opsForSet().members(key);
         if (chunkIds != null && !chunkIds.isEmpty()) {
@@ -75,6 +87,20 @@ public class EmbeddingService {
             log.warn("No chunks found for docId: {}", docId);
         }
         redisTemplate.delete(key);
+    }
+
+    private String readContentHash(String docId) {
+        String json = redisTemplate.opsForValue().get(META_KEY_PREFIX + docId);
+        if (json == null) {
+            return null;
+        }
+        try {
+            JsonNode node = objectMapper.readTree(json).path("contentHash");
+            return node.isTextual() ? node.asText() : null;
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to parse doc meta for {}, skipping hash cleanup", docId, e);
+            return null;
+        }
     }
 
     public int getChunkCount(String docId) {
