@@ -106,7 +106,7 @@
 **Files:** KnowledgeAssistantApplication.java, application.yml, static/index.html, static/admin.html
 
 - [ ] **Step 1:** Implement KnowledgeAssistantApplication (@SpringBootApplication)
-- [ ] **Step 2:** Implement application.yml (Ollama base-url + qwen2.5 model, Redis localhost:6379/123456, vectorstore.redis initialize-schema/index-name/prefix, multipart 10MB)
+- [ ] **Step 2:** Implement application.yml (Ollama base-url + qwen2.5 model, Redis localhost:6379/<redis-password>, vectorstore.redis initialize-schema/index-name/prefix, multipart 10MB)
 - [ ] **Step 3:** Implement index.html chat page (Tailwind CDN, message list, fetch POST /api/chat, new conversation button, link to admin)
 - [ ] **Step 4:** Implement admin.html management page (file upload form, fetch POST /api/knowledge/upload, doc list GET /list, delete DELETE /{id})
 - [ ] **Step 5:** `mvn compile -q` full compile verification

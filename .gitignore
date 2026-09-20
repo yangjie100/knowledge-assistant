@@ -30,3 +30,6 @@ __pycache__/
 
 # Secrets (M-3)
 .env
+
+# local-only tooling
+.mvn-gate-cmd
