@@ -47,16 +47,14 @@ function renderMarkdown(text) {
 }
 
 function updateConvDisplay() {
-    convIdEl.textContent = 'Conversation: ' + conversationId.substring(0, 8) + '...';
+    convIdEl.textContent = 'conv: ' + conversationId.substring(0, 8);
 }
 updateConvDisplay();
 
 streamToggle.addEventListener('click', function() {
     streamMode = !streamMode;
-    streamToggle.textContent = 'Stream: ' + (streamMode ? 'ON' : 'OFF');
-    streamToggle.className = streamMode
-        ? 'px-3 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600'
-        : 'px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300';
+    streamToggle.textContent = 'STREAM ' + (streamMode ? 'ON' : 'OFF');
+    streamToggle.className = streamMode ? 'ka-ghost-btn on' : 'ka-ghost-btn';
 });
 
 function parseThinkBlock(text) {
@@ -83,26 +81,56 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function appendMessage(role, text) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'flex ' + (role === 'user' ? 'justify-end' : 'justify-start');
+/* ── 空状态：▌ awaiting input ── */
+function showEmpty() {
+    messagesEl.innerHTML = '<div class="ka-empty">'
+        + '<div class="ka-empty-mark">▌ awaiting input</div>'
+        + '<div class="ka-empty-sub">检索 · 推理 · 生成 —— 每次问答都是一条可追溯的实验日志</div>'
+        + '</div>';
+}
 
-    const bubble = document.createElement('div');
-    bubble.className = role === 'user'
-        ? 'max-w-[70%] bg-blue-500 text-white rounded-2xl px-4 py-2'
-        : 'max-w-[70%] bg-white text-gray-800 rounded-2xl px-4 py-2 shadow';
-    
+/* 日志条目式消息。返回正文容器（assistant 场景由调用方继续填充）。 */
+function appendMessage(role, text) {
+    const empty = messagesEl.querySelector('.ka-empty');
+    if (empty) empty.remove();
+
+    const entry = document.createElement('div');
+    entry.className = role === 'user' ? 'ka-msg-user' : 'ka-msg-ka';
+
+    const prefix = document.createElement('span');
+    prefix.className = 'ka-prefix';
+    prefix.textContent = role === 'user' ? 'user ▍' : 'ka ▸';
+
+    const body = document.createElement('div');
+    body.className = 'ka-body';
+
+    entry.appendChild(prefix);
+    entry.appendChild(body);
 
     if (role === 'assistant') {
-        bubble.dataset.rawText = '';
+        body.dataset.rawText = '';
+        body.kaStart = Date.now();
+        const meta = document.createElement('div');
+        meta.className = 'ka-meta';
+        meta.textContent = 'conv: ' + conversationId.substring(0, 8);
+        entry.appendChild(meta);
+        body.kaMetaEl = meta;
     } else {
-        bubble.textContent = text;
+        body.textContent = text;
     }
 
-    wrapper.appendChild(bubble);
-    messagesEl.appendChild(wrapper);
+    messagesEl.appendChild(entry);
     messagesEl.scrollTop = messagesEl.scrollHeight;
-    return bubble;
+    return body;
+}
+
+/* 元数据栏收口：耗时 + 模式（mono） */
+function finalizeMeta(body, mode) {
+    if (!body.kaMetaEl || !body.kaStart) return;
+    const elapsed = Math.max(0.1, (Date.now() - body.kaStart) / 1000).toFixed(1) + 's';
+    body.kaMetaEl.innerHTML = 'conv: ' + conversationId.substring(0, 8)
+        + '<span class="ka-meta-sep">·</span>' + elapsed
+        + '<span class="ka-meta-sep">·</span>' + mode;
 }
 
 function renderAssistantBubble(bubble, rawText) {
@@ -111,16 +139,18 @@ function renderAssistantBubble(bubble, rawText) {
 
     let html = '';
     if (think) {
-        html += '<details class="mb-2 think-block"><summary class="cursor-pointer text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1">'
-            + '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+        html += '<details class="think-block"><summary>'
+            + '<svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
             + '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'
-            + 'Thinking process</summary>'
-            + '<div class="mt-2 p-3 bg-gray-50 rounded-lg text-xs text-gray-500 whitespace-pre-wrap border border-gray-100">'
-            + escapeHtml(think) + '</div></details>';
+            + '▸ reasoning trace</summary>'
+            + '<div class="think-body">' + escapeHtml(think) + '</div></details>';
     }
     const mainText = answer || (!think ? rawText : '');
     if (mainText) {
-        html += '<div class="markdown-content prose prose-sm max-w-none">' + renderMarkdown(mainText) + '</div>';
+        html += '<div class="markdown-content">' + renderMarkdown(mainText) + '</div>';
+    }
+    if (bubble.dataset.streaming === '1') {
+        html += '<span class="ka-cursor">▍</span>';
     }
     bubble.innerHTML = html;
     if (typeof hljs !== 'undefined') {
@@ -130,8 +160,9 @@ function renderAssistantBubble(bubble, rawText) {
 
 function setLoading(loading) {
     sendBtn.disabled = loading;
-    sendBtn.textContent = loading ? 'Waiting...' : 'Send';
+    sendBtn.textContent = loading ? 'retrieving…' : 'SEND';
     questionInput.disabled = loading;
+    messagesEl.classList.toggle('is-loading', loading);
 }
 
 function sendSync(question) {
@@ -147,6 +178,7 @@ function sendSync(question) {
             updateConvDisplay();
             const bubble = appendMessage('assistant', '');
             renderAssistantBubble(bubble, data.data.answer || 'No response');
+            finalizeMeta(bubble, 'sync');
         } else {
             appendMessage('assistant', 'Error: ' + (data.message || 'Unknown error'));
         }
@@ -161,6 +193,7 @@ function sendSync(question) {
 function sendStream(question) {
     apiAuth(); // sync cookie for EventSource (no custom headers possible)
     const bubble = appendMessage('assistant', '');
+    bubble.dataset.streaming = '1';
     const url = '/api/chat/stream?question=' + encodeURIComponent(question)
         + '&conversationId=' + encodeURIComponent(conversationId);
     const eventSource = new EventSource(url);
@@ -174,9 +207,14 @@ function sendStream(question) {
     eventSource.onerror = function() {
         eventSource.close();
         currentEventSource = null;
+        bubble.dataset.streaming = '0';
         if (!bubble.dataset.rawText) {
             bubble.textContent = '(No response)';
+        } else {
+            // 重新渲染以移除流式光标
+            renderAssistantBubble(bubble, bubble.dataset.rawText);
         }
+        finalizeMeta(bubble, 'stream');
         setLoading(false);
     };
 }
@@ -209,7 +247,7 @@ newChatBtn.addEventListener('click', function() {
     }
     conversationId = generateUUID();
     updateConvDisplay();
-    messagesEl.innerHTML = '';
+    showEmpty();
 });
 
 // Conversation management
@@ -221,21 +259,28 @@ async function loadConversations() {
     } catch(e) { console.error('Failed to load conversations:', e); }
 }
 
+/* mono 时间戳：MM-DD HH:mm */
+function formatConvTime(t) {
+    if (!t) return '';
+    const d = new Date(t);
+    if (isNaN(d.getTime())) return '';
+    const p = function(n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
 function renderConversations(conversations) {
     conversationList.innerHTML = conversations.map(function(conv) {
         const isActive = conv.conversationId === conversationId;
         const lastQ = conv.lastQuestion || 'New conversation';
-        const time = conv.lastMessageAt || conv.createdAt;
-        const timeStr = time ? new Date(time).toLocaleString() : '';
-        return '<div class="flex items-center justify-between p-2 rounded cursor-pointer '
-            + (isActive ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50')
-            + '" data-cid="' + conv.conversationId + '">'
+        const timeStr = formatConvTime(conv.lastMessageAt || conv.createdAt);
+        return '<div class="conv-item-wrapper flex items-center justify-between p-2 cursor-pointer'
+            + (isActive ? ' ka-active' : '') + '" data-cid="' + conv.conversationId + '">'
             + '<div class="flex-1 min-w-0 conv-item" data-cid="' + conv.conversationId + '">'
-            + '<div class="text-sm font-medium text-gray-700 truncate">' + escapeHtml(lastQ) + '</div>'
-            + '<div class="text-xs text-gray-400">' + timeStr
+            + '<div class="conv-title truncate">' + escapeHtml(lastQ) + '</div>'
+            + '<div class="conv-meta">' + timeStr
             + (conv.messageCount ? ' &middot; ' + conv.messageCount + ' msgs' : '')
             + '</div></div>'
-            + '<button class="conv-del ml-2 text-gray-300 hover:text-red-500 text-sm" data-cid="' + conv.conversationId + '">&times;</button></div>';
+            + '<button class="conv-del ml-2" aria-label="Delete conversation" data-cid="' + conv.conversationId + '">&times;</button></div>';
     }).join('');
     conversationList.querySelectorAll('.conv-item').forEach(function(el) {
         el.addEventListener('click', function() { switchConversation(this.dataset.cid); });
@@ -263,6 +308,7 @@ async function switchConversation(convId) {
             });
         }
     } catch(e) { console.error('Failed to load history:', e); }
+    messagesEl.scrollTop = messagesEl.scrollHeight;
     toggleSidebar(false);
     loadConversations();
 }
@@ -274,7 +320,7 @@ async function deleteConversation(convId) {
         if (convId === conversationId) {
             conversationId = generateUUID();
             updateConvDisplay();
-            messagesEl.innerHTML = '';
+            showEmpty();
         }
         loadConversations();
     } catch(e) { console.error('Failed to delete conversation:', e); }
@@ -286,3 +332,6 @@ function toggleSidebar(show) {
 
 historyBtn.addEventListener('click', function() { loadConversations(); toggleSidebar(true); });
 closeSidebarBtn.addEventListener('click', function() { toggleSidebar(false); });
+
+// 初始空状态
+showEmpty();
