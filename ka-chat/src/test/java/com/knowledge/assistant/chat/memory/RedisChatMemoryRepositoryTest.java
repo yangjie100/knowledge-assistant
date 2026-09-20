@@ -71,4 +71,23 @@ class RedisChatMemoryRepositoryTest {
         verify(valueOps).set(eq("chat:conv:meta:conv-1"), anyString(), eq(Duration.ofHours(24)));
         verify(setOps).add("chat:conversations", "conv-1");
     }
+
+    @Test
+    void findAllConversationInfoPurgesGhostMembersWhoseMessageKeyExpired() {
+        when(redisTemplate.opsForSet()).thenReturn(setOps);
+        when(setOps.members("chat:conversations")).thenReturn(Set.of("live-conv", "ghost-conv"));
+        when(redisTemplate.hasKey("chat:memory:live-conv")).thenReturn(true);
+        when(redisTemplate.hasKey("chat:memory:ghost-conv")).thenReturn(false);
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(valueOps.get("chat:conv:meta:live-conv")).thenReturn(
+                "{\"conversationId\":\"live-conv\",\"createdAt\":\"2026-09-20T10:00:00\","
+                        + "\"lastMessageAt\":\"2026-09-20T10:05:00\",\"messageCount\":2,\"lastQuestion\":\"hi\"}");
+
+        List<ConversationInfo> result = repository.findAllConversationInfo();
+
+        assertEquals(1, result.size());
+        assertEquals("live-conv", result.get(0).conversationId());
+        verify(setOps).remove("chat:conversations", "ghost-conv");
+        verify(setOps, never()).remove("chat:conversations", "live-conv");
+    }
 }

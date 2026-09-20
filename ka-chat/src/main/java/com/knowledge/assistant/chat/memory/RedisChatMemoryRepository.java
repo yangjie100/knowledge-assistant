@@ -79,6 +79,13 @@ public class RedisChatMemoryRepository implements ChatMemoryRepository {
         }
         List<ConversationInfo> result = new ArrayList<>();
         for (String id : ids) {
+            // Redis set members cannot expire individually: the message key dies at TTL 24h
+            // but its entry stays in the index forever. Lazily purge such ghosts on read.
+            if (!Boolean.TRUE.equals(redisTemplate.hasKey(KEY_PREFIX + id))) {
+                log.info("Purging ghost conversation from index: {}", id);
+                redisTemplate.opsForSet().remove(CONVERSATIONS_KEY, id);
+                continue;
+            }
             readMeta(id).ifPresent(result::add);
         }
         result.sort(Comparator.comparing(
