@@ -7,12 +7,15 @@ import com.knowledge.assistant.agent.workflow.impl.RoutingWorkflow;
 import com.knowledge.assistant.rag.service.RetrievalService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 @Configuration
@@ -51,8 +54,26 @@ public class AgentWorkflowConfig {
         return new ChainWorkflow(steps);
     }
 
+    /**
+     * Bounded Spring-managed pool for parallel workflow steps: they run blocking LLM IO,
+     * which must not sit on ForkJoinPool.commonPool(). Sized for the largest parallel
+     * workflow (3 steps) plus headroom; CallerRunsPolicy degrades by slowing submission
+     * instead of failing the whole workflow when the bounded queue fills up.
+     */
+    @Bean
+    public ThreadPoolTaskExecutor agentWorkflowExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(6);
+        executor.setMaxPoolSize(6);
+        executor.setQueueCapacity(16);
+        executor.setThreadNamePrefix("agent-wf-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
+
     public Workflow createParallelWorkflow(List<WorkflowStep> steps) {
-        return new ParallelizationWorkflow(steps);
+        return new ParallelizationWorkflow(steps, agentWorkflowExecutor());
     }
 
     public Workflow createRoutingWorkflow(Map<String, WorkflowStep> stepMap) {

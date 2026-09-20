@@ -68,4 +68,34 @@ class ParallelizationWorkflowTest {
         assertTrue(response.isSuccess());
         assertTrue(response.getContent().contains("test-echo"));
     }
+
+    @Test
+    @DisplayName("Parallel workflow should degrade instead of hanging when a step exceeds timeout")
+    void shouldDegradeOnTimeoutInsteadOfHanging() {
+        // Given: a step blocked far longer than the 1s timeout, on a real async executor
+        WorkflowStep slowStep = new ChainWorkflowTest.StubStep("slow", s -> {
+            try {
+                Thread.sleep(5_000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return s;
+        });
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+        try {
+            ParallelizationWorkflow workflow = new ParallelizationWorkflow(List.of(slowStep), executor, 1);
+
+            // When
+            long start = System.currentTimeMillis();
+            WorkflowResponse response = workflow.execute(new WorkflowRequest("test"));
+            long elapsed = System.currentTimeMillis() - start;
+
+            // Then: degraded (not hanging), and returned roughly at the timeout boundary
+            assertFalse(response.isSuccess());
+            assertNotNull(response.getErrorMessage());
+            assertTrue(elapsed < 3_000, "should degrade near the 1s timeout but took " + elapsed + "ms");
+        } finally {
+            executor.shutdownNow();
+        }
+    }
 }
