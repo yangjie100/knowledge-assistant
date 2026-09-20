@@ -26,11 +26,17 @@
         <module>ka-admin</module>
         <module>ka-webapp</module>
         <module>ka-mcp</module>
+        <module>ka-graph</module>
     </modules>
 
     <properties>
         <java.version>21</java.version>
         <spring-ai.version>1.1.4</spring-ai.version>
+        <!-- JaCoCo ratchet floor (bundle LINE covered-ratio). 2026-08-26 baseline:
+             rag 64.3 / common 55.6 / admin 49.6 / agent 49.5 / chat 45.1 (%).
+             mcp+graph have no tests (check auto-skips). Ratchet per module by
+             overriding this property in the module pom. -->
+        <jacoco.line.min>0.40</jacoco.line.min>
     </properties>
 
     <dependencies>
@@ -88,5 +94,55 @@
             </releases>
         </repository>
     </repositories>
+
+    <build>
+        <plugins>
+            <!-- Coverage gate: prepare-agent -> report -> check, enforced at `mvn verify`.
+                 Thresholds are ratchet-style (module overrides set measured baseline,
+                 rounded down): they block regression below today's level, not an
+                 aspirational 80%. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.13</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${jacoco.line.min}</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

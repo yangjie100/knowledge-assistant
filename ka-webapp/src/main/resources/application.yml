@@ -78,6 +78,19 @@ ka:
       recall-threshold: 0.5
       top-n: 5
       timeout-seconds: 10
+  graph:
+    # GraphRAG opt-in (P2-1). Inert by default — needs the ka-neo4j container (bolt 17687)
+    # AND bge-m3 1024d embeddings (KA_EMBEDDING_PROVIDER=tei) to match the vector index dim.
+    # All graph beans (Driver/GraphRetrievalService/GraphWorkflowConfig/GraphRagController)
+    # are @ConditionalOnProperty(this flag), so enabled=false = zero overhead, zero regression.
+    enabled: ${KA_GRAPH_ENABLED:false}
+    neo4j:
+      uri: ${KA_GRAPH_NEO4J_URI:bolt://localhost:17687}
+      user: neo4j
+      password: ${KA_GRAPH_NEO4J_PASSWORD:}
+    retrieval:
+      top-k: 3
+      hops: 2
 
 management:
   endpoints:
