@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.knowledge</groupId>
+        <artifactId>knowledge-assistant</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>ka-graph</artifactId>
+    <name>KA Graph RAG</name>
+    <description>Neo4j GraphRAG: entity extraction, knowledge graph build, 3-step retrieval</description>
+
+    <dependencies>
+        <!-- Reuse ka-rag's VectorStore / EmbeddingModel / RetrievalService. ChatModel is
+             injected by interface; the GLM bean is assembled by ka-webapp at runtime, so
+             ka-graph is not coupled to any specific model starter. -->
+        <dependency>
+            <groupId>com.knowledge</groupId>
+            <artifactId>ka-rag</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- ka-agent: reuse WorkflowStep / ChainWorkflow / ContextAnswerStep so GraphRAG composes
+             into the existing workflow chain pattern (same shape as KnowledgeSearchStep). -->
+        <dependency>
+            <groupId>com.knowledge</groupId>
+            <artifactId>ka-agent</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Neo4j raw driver. Spring AI 1.1.4 has no Neo4j vector-store starter (verified
+             absent in local .m2), so ka-graph self-builds the graph services — matching how
+             ka-rag self-builds TeiEmbeddingModel / RagAdvisor / RerankService. -->
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>5.26.0</version>
+        </dependency>
+    </dependencies>
+
+</project>

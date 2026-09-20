@@ -1,0 +1,192 @@
+{
+  "summary": {
+    "label": "graph-rag",
+    "model": "glm-5.2",
+    "total": 10,
+    "scored": 10,
+    "avg_score": 7.6,
+    "max": 80
+  },
+  "results": [
+    {
+      "id": "q01",
+      "question": "knowledge-assistant 项目使用什么作为向量存储？",
+      "expected": "Redis VectorStore",
+      "tags": [
+        "架构"
+      ],
+      "answer": "knowledge-assistant 项目使用 **Redis VectorStore** 作为向量存储。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "回答完全正确，覆盖了所有参考要点，且直接切题，无臆造内容"
+      },
+      "rag_seconds": 23.7
+    },
+    {
+      "id": "q02",
+      "question": "项目用哪个组件提供 LLM 推理能力？",
+      "expected": "Ollama（本地模型，如 qwen2.5/deepseek）",
+      "tags": [
+        "架构"
+      ],
+      "answer": "# 项目中提供 LLM 推理能力的组件\n\n根据知识图谱和设计文档，本项目使用 **Ollama** 作为提供 LLM（大语言模型）推理能力的核心组件。\n\n## 关键信息\n\n**Ollama** 是本地大语言模型运行工具，它在本项目中承担 LLM 推理职责，具体体现在：\n\n| 维度 | 说明 |\n|------|------|\n| **本地模型** | 运行 `qwen2.5` 或 `deepseek` 模型 |\n| **嵌入服务** | 通过 Ollama Embedding 将文档向量化 |\n| **对话推理** | 通过 `OllamaChatClientConfig` 创建 ChatClient Bean，处理用户问答 |\n| **Agent 推理** | 在 ka-agent 中结合 Spring AI 的 ToolCallAdvisor，支持 Function Calling 与 ReAct 推理循环 |\n\n## 多跳推理链路\n\n```\n用户问题 → ChatClient (ka-chat 模块) \n        → Spring AI (框架，封装调用)\n        → Ollama (工具，本地 LLM 推理)\n        → 返回生成结果\n```\n\n## 模块依赖关系\n\nOllama 作为底层推理工具，被项目多个模块关联引用：\n- **ka-rag**：用于文档嵌入\n- **ka-chat**：用于对话管理与流式输出\n- **ka-agent**：用于 ReAct 推理 + Function Calling\n\n此外，项目通过 **Spring AI 框架**（依赖 `spring-ai-starter-model-ollama`）集成 Ollama，从而获得模型调用、工具调用等标准化能力。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "回答准确指出项目使用 Ollama 提供大模型推理能力，并补充了 qwen2.5/deepseek 等本地模型细节，完全符合参考要点且未包含无关臆造信息，回答切题且完整。"
+      },
+      "rag_seconds": 9.8
+    },
+    {
+      "id": "q03",
+      "question": "ka-rag 模块的主要职责是什么？",
+      "expected": "RAG 引擎：负责文档加载、切分、嵌入和检索",
+      "tags": [
+        "模块"
+      ],
+      "answer": "## ka-rag 模块的主要职责\n\n**ka-rag** 是整个知识助手系统中的 **RAG（检索增强生成）引擎模块**，位于依赖链 `ka-webapp → ka-admin → ka-chat → ka-rag → ka-common` 的核心位置，向上游的 `ka-chat` 对话模块提供文档检索能力，并依赖基础的 `ka-common` 模块。\n\n其主要职责可拆解为以下四个方面：\n\n### 1. 文档加载（Document Loading）\n通过 `DocumentLoader` 接口及 `DocumentLoaderFactory` 工厂类，支持加载四种格式的文档：\n\n| 实现类 | 支持格式 |\n|--------|---------|\n| `TextDocumentLoader` | `.txt` |\n| `MarkdownDocumentLoader` | `.md` |\n| `PdfDocumentLoader` | `.pdf` |\n| `HtmlDocumentLoader` | `.html` |\n\n### 2. 文档切分（Document Splitting）\n利用 `DocumentSplitter`（底层为 `TokenTextSplitter`），按 token 数对长文档进行切块，默认 `chunkSize=800, overlap=200`，以保留上下文连续性。\n\n### 3. 向量嵌入（Embedding）\n由 `EmbeddingService` 负责，流程为：**加载文档 → 切分为 chunk → 添加 UUID/元数据（docId, source, title, chunkIndex）→ 调用 Ollama Embedding 向量化 → 存入 Redis VectorStore**。\n\n### 4. 相似度检索（Retrieval）\n由 `RetrievalService` 负责，流程为：**接收用户 query → 向量化 → 在 Redis VectorStore 中进行相似度检索 → 返回 top-K 文档片段**（默认 `topK=5, threshold=0.7`，通过 `SearchRequest` 构建请求）。\n\n---\n\n**一句话总结：** ka-rag 模块承担了从\"原始文档上传解析\"到\"向量入库\"以及\"根据问题检索相关知识片段\"的完整 RAG 数据链路，是连接**知识库**与**大模型对话**之间的桥梁。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确且详细地阐述了ka-rag模块的职责，完全切题。不仅全面覆盖了参考要点中的'文档加载、切分、嵌入和检索'四个核心功能，且具有高度的结构性，充分展现了由语料支撑的细节。"
+      },
+      "rag_seconds": 12.2
+    },
+    {
+      "id": "q04",
+      "question": "文档切分使用什么方法？",
+      "expected": "TokenTextSplitter，按 token 数切分，overlap 保留上下文连续性",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "## 文档切分方法\n\n根据知识图谱信息，文档切分使用 **TokenTextSplitter（Token 切分器）**，即按 **token 数** 进行切分，并通过保留 overlap（重叠区）来维持上下文连续性。\n\n### 详细信息\n\n| 项目 | 内容 |\n|------|------|\n| 切分组件 | `DocumentSplitter` |\n| 底层实现 | `TokenTextSplitter`（按 token 数切分） |\n| 所属模块 | `ka-rag` |\n\n### 配置参数的演进\n\n**初始实现（Task 3）：**\n- chunkSize = **800**\n- overlap = **200**\n\n**Day 4 优化后（Chunk Config）：**\n通过 `@ConfigurationProperties(prefix=\"ka.rag.chunk\")` 进行配置化管理：\n- defaultSize = **800**\n- minSize = **200**\n- overlap = **100**\n- 由 `DocumentSplitter` 读取这些配置值\n\n### 关联关系链\n```\nDocumentSplitter → Token切分器（TokenTextSplitter）→ 嵌入服务\n                                    ↓\n                        chunk配置（@ConfigurationProperties）\n```\n\n`DocumentSplitter` 与 `DocumentLoaderFactory`、`VectorStore` 等组件协作，共同支撑 `EmbeddingService`（嵌入服务）完成\"加载 → 切分 → 向量化 → 存储\"的完整流程。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确包含了参考要点中的全部内容（使用TokenTextSplitter，按token数切分，通过overlap保留上下文连续性），完全切题，无臆造事实，完整覆盖核心要求，且补充的额外信息合理清晰。"
+      },
+      "rag_seconds": 8.2
+    },
+    {
+      "id": "q05",
+      "question": "检索服务默认返回多少个文档片段，相似度阈值是多少？",
+      "expected": "top-K=5，相似度阈值 0.7",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "根据提供的文档片段，检索服务（RetrievalService）默认返回 **5** 个文档片段（topK=5），相似度阈值为 **0.7**。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确无误地指出了默认返回5个文档片段及0.7的相似度阈值，完全切题、完整且由语料支撑。"
+      },
+      "rag_seconds": 8.4
+    },
+    {
+      "id": "q06",
+      "question": "项目的对话记忆是如何实现的？",
+      "expected": "InMemoryChatMemory，按 conversationId 隔离，通过 MessageChatMemoryAdvisor 集成",
+      "tags": [
+        "对话"
+      ],
+      "answer": "# 项目对话记忆的实现机制\n\n根据知识图谱中的实体关系和文档信息，项目的对话记忆主要通过以下组件协同实现：\n\n## 核心组件链\n\n```\nInMemoryChatMemory → MessageChatMemoryAdvisor → ChatClient → OllamaChatClientConfig\n```\n\n## 具体实现细节\n\n### 1. **InMemoryChatMemory（记忆存储）**\n- 基于**内存**的对话记忆实现\n- 按 **conversationId** 隔离不同对话会话，确保多用户/多会话的上下文独立\n\n### 2. **MessageChatMemoryAdvisor（集成顾问）**\n- 负责将 InMemoryChatMemory **集成** 到 ChatClient 中\n- 是记忆机制与聊天客户端之间的桥梁组件\n\n### 3. **配置与初始化**\n- 由 **OllamaChatClientConfig** 配置类负责创建 ChatClient Bean，并装配记忆相关组件\n\n## 对话记忆的调用流程\n\n根据 ChatService 的流程设计：\n\n```\n用户问题 + conversationId\n        ↓\n检索相关文档片段（RetrievalService）\n        ↓\n组装 Prompt = system prompt + context + 历史对话（来自记忆） + 当前问题\n        ↓\nChatClient 生成流式回答（SSE）\n        ↓\n更新 InMemoryChatMemory 中的对话记录\n```\n\n## 总结\n\n项目采用 **轻量级内存记忆方案**（InMemoryChatMemory），通过 conversationId 实现会话隔离，借助 Spring AI 的 MessageChatMemoryAdvisor 优雅地集成到 ChatClient 调用链中，使得每次对话都能携带历史上下文，从而支持多轮对话能力。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "回答准确无误，全面覆盖了参考要点中的InMemoryChatMemory、conversationId隔离以及MessageChatMemoryAdvisor集成，且完全切题，结构清晰，无明显臆造内容。"
+      },
+      "rag_seconds": 16.0
+    },
+    {
+      "id": "q07",
+      "question": "knowledge-assistant 支持哪些文档格式上传？",
+      "expected": "pdf、txt、md、html 四种格式",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "根据知识库信息，knowledge-assistant 支持 **4 种文档格式**上传，由 `ka-rag` 模块中的文档加载器实现：\n\n| 加载器实现类 | 支持格式 |\n|------|------|\n| PdfDocumentLoader | `.pdf` |\n| TextDocumentLoader | `.txt` |\n| MarkdownDocumentLoader | `.md` |\n| HtmlDocumentLoader | `.html` |\n\n这些加载器均实现自 `DocumentLoader` 接口，并通过 `DocumentLoaderFactory` 进行分发调用。上传的文档会经过解析、Token 切分、Ollama 嵌入后，最终存入 Redis VectorStore 中以供检索问答使用。",
+      "score": 7,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 1,
+        "reason": "准确完整列出pdf/txt/md/html四种格式且完全切题；但回答混入了加载器类名、Ollama、Redis等参考要点之外的语料内容，接地性轻微扣分"
+      },
+      "rag_seconds": 5.9
+    },
+    {
+      "id": "q08",
+      "question": "RAG 系统从上传到存入向量库的关键流程是什么？",
+      "expected": "上传文档 → 解析 → 切分 → 嵌入 → 存入 Redis VectorStore",
+      "tags": [
+        "RAG"
+      ],
+      "answer": "# RAG 系统从上传到存入向量库的关键流程\n\n根据知识图谱中的实体关系和文档片段，整个流程可以分为以下几个关键步骤：\n\n## 完整流程链\n\n```\n上传文档 → 文档解析 → 文档切分 → 嵌入向量化 → 存入 Redis VectorStore\n```\n\n### 详细说明\n\n**1. 上传与解析阶段**\n- 文档上传后，由 **DocumentLoaderFactory**（文档加载器工厂）根据文件格式分发给对应的 **DocumentLoader**（文档加载器）实现：\n  - `PdfDocumentLoader` 处理 `.pdf`\n  - `TextDocumentLoader` 处理 `.txt`\n  - `MarkdownDocumentLoader` 处理 `.md`\n  - `HtmlDocumentLoader` 处理 `.html`\n\n**2. 切分阶段**\n- **DocumentSplitter**（文档分割器）根据分块配置（`@ConfigurationProperties(prefix=\"ka.rag.chunk\")`，默认 size=800, overlap=100）对文档进行切分\n- 实现方式为 **TokenTextSplitter**（Token切分器），按 token 数切分并通过 overlap 保留上下文连续性\n\n**3. 嵌入阶段**\n- **EmbeddingService**（嵌入服务）接收切分后的 chunk\n- 调用 **Ollama嵌入** 服务将文本块转换为向量\n- 同时将 chunk 文本存入 **Redis Hash**（`chunk:text:{chunkId} -> {content, docId}`）\n\n**4. 存储阶段**\n- 向量数据最终存入 **Redis VectorStore**（Redis向量库）\n- 每个文档记录元数据（source, title, chunkIndex）\n\n### 多跳关系推理\n\n通过实体关系可以清晰看到依赖链：\n\n> **DocumentLoader** → **DocumentSplitter** → **EmbeddingService** → **Ollama嵌入** → **Redis向量库**\n\n这些组件全部位于 **ka-rag** 模块中，该模块依赖于 **ka-common** 提供的基础模型（如 `KnowledgeDocument`）和异常类（如 `DocumentParseException`）来支撑整个流程的错误处理和数据传递。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确、完整地覆盖了参考要点的全部流程（上传文档 → 解析 → 切分 → 嵌入 → 存入 Redis VectorStore），并提供了详细的技术实现细节和组件依赖关系，与问题完全切题且基于语料无臆造。"
+      },
+      "rag_seconds": 12.0
+    },
+    {
+      "id": "q09",
+      "question": "当上下文中没有相关信息时，系统应该如何回答？",
+      "expected": "system prompt 要求诚实回答不知道，不要编造",
+      "tags": [
+        "对话"
+      ],
+      "answer": "根据系统设计文档中 `ka-chat`（对话管理）模块的配置，当上下文中没有相关信息时，系统应该**诚实回答不知道**。\n\n这是由系统的核心设定（System Prompt）决定的：“你是一个知识库助手。根据提供的上下文文档回答用户问题。如果上下文中没有相关信息，请诚实回答不知道。”",
+      "score": 5,
+      "detail": {
+        "accuracy": 1,
+        "relevance": 2,
+        "completeness": 1,
+        "grounding": 1,
+        "reason": "回答正确指出了应诚实回答不知道，完全切题；但遗漏了参考要点中的'不要编造'，完整性有缺失；且引入了疑似语料外或编造的细节（如ka-chat模块配置、具体的System Prompt文本），导致接地性和准确性存在轻微瑕疵。"
+      },
+      "rag_seconds": 11.5
+    },
+    {
+      "id": "q10",
+      "question": "项目最初划分为哪几个 Maven 模块？",
+      "expected": "ka-common、ka-rag、ka-chat、ka-admin、ka-webapp 五个模块",
+      "tags": [
+        "模块"
+      ],
+      "answer": "项目最初划分为 **5** 个 Maven 模块，具体如下：\n\n1. **ka-common**：基础模块，提供公共模型、工具类和异常处理。\n2. **ka-rag**：RAG 引擎模块，负责文档的加载、切分、嵌入和检索。\n3. **ka-chat**：对话管理模块，负责处理聊天交互、记忆和流式输出。\n4. **ka-admin**：系统管理模块，提供知识库和对话的管理 API（CRUD）。\n5. **ka-webapp**：启动与 Web 模块，包含应用程序主入口及前端页面。\n\n它们之间的架构依赖关系为：`ka-webapp -> ka-admin -> ka-chat -> ka-rag -> ka-common`。",
+      "score": 8,
+      "detail": {
+        "accuracy": 2,
+        "relevance": 2,
+        "completeness": 2,
+        "grounding": 2,
+        "reason": "系统回答准确列出了参考要点中的五个 Maven 模块（ka-common、ka-rag、ka-chat、ka-admin、ka-webapp），完全切题且覆盖了全部要点，同时提供了合理的补充说明且无明显臆造。"
+      },
+      "rag_seconds": 7.5
+    }
+  ]
+}
