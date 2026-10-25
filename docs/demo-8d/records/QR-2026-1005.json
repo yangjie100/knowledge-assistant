@@ -1,0 +1,13 @@
+{
+  "recordId": "QR-2026-1005",
+  "productCode": "ZK-D1 数据记录单元",
+  "batchNo": "P2026-1025-02",
+  "process": "软件配置 → 出厂检验",
+  "occurrenceTime": "2026-10-25 08:55",
+  "defectDescription": "出厂检验发现 Flash 程序版本为 V2.1，工艺文件规定应烧录 V2.3；追溯确认烧录站服务器周末升级后版本清单未同步",
+  "inspectionData": "版本核查 20 块，错烧 V2.1 共 7 块；烧录日志显示清单版本号 7 天前起即为旧值",
+  "quantity": { "defectives": 7, "batchTotal": 20 },
+  "detectedBy": "出厂检验版本核查项拦截",
+  "disposition": "错烧板全数隔离重烧，烧录站暂停，待 8D 分析",
+  "severity": "B 级"
+}

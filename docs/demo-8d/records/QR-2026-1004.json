@@ -1,0 +1,13 @@
+{
+  "recordId": "QR-2026-1004",
+  "productCode": "ZK-A7 控制板组件",
+  "batchNo": "P2026-1024-01",
+  "process": "三防漆涂覆 → 固化检验",
+  "occurrenceTime": "2026-10-24 11:30",
+  "defectDescription": "三防漆固化后检验发现漆膜气泡 3 块、流挂遮盖标识 2 块，气泡最大 0.8 mm 超过工艺规范 0.5 mm 上限",
+  "inspectionData": "气泡 3 块/流挂 2 块，合计 5 块；漆料粘度记录 45 s（规范 38~42 s）；环境湿度记录 72%RH",
+  "quantity": { "defectives": 5, "batchTotal": 60 },
+  "detectedBy": "涂覆检验员目检 + 10 倍放大镜确认",
+  "disposition": "不良品返工除漆重涂，待 8D 分析",
+  "severity": "C 级"
+}

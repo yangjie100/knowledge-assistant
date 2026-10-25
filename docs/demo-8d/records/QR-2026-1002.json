@@ -1,0 +1,13 @@
+{
+  "recordId": "QR-2026-1002",
+  "productCode": "ZK-B2 电源模块",
+  "batchNo": "P2026-1020-01",
+  "process": "插件 → 老炼",
+  "occurrenceTime": "2026-10-21 15:20",
+  "defectDescription": "老炼 8 小时后巡检发现 C8 位号钽电容鼓包 1 块，拆检确认极性反装；同批复检另发现反装未失效 2 块",
+  "inspectionData": "鼓包失效 1 块；反装合计 3 块；电容本体丝印极性条颜色偏浅",
+  "quantity": { "defectives": 3, "batchTotal": 90 },
+  "detectedBy": "老炼操作员报检，检验员确认",
+  "disposition": "全批拆盖目检极性，不良隔离，待 8D 分析",
+  "severity": "B 级"
+}

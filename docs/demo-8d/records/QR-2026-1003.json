@@ -1,0 +1,13 @@
+{
+  "recordId": "QR-2026-1003",
+  "productCode": "ZK-C2 信号处理单元",
+  "batchNo": "P2026-1022-03",
+  "process": "整机联调",
+  "occurrenceTime": "2026-10-22 10:05",
+  "defectDescription": "联调自检报 J2 连接器通道通信丢帧，轻摇线缆可复现闪断；换通道复测无改善，定位为对配连接器接触不良",
+  "inspectionData": "丢帧率 0.3%；示波器捕获瞬时断链 2 次；同批连接器抽 10 只测插拔力，4 只低于标准下限",
+  "quantity": { "defectives": 1, "batchTotal": 5 },
+  "detectedBy": "调试工程师联调报障",
+  "disposition": "故障整机停试，库存同批连接器冻结，待 8D 分析",
+  "severity": "A 级"
+}

@@ -1,0 +1,13 @@
+{
+  "recordId": "QR-2026-1001",
+  "productCode": "ZK-A5 接口板组件",
+  "batchNo": "P2026-1018-02",
+  "process": "回流焊后 AOI + 电测",
+  "occurrenceTime": "2026-10-18 09:40",
+  "defectDescription": "AOI 检出 Chip 元件焊点异常 11 处，复判确认立碑 4 处、疑似虚焊 7 处，集中在板边缘 A 区；电测 3 块网络开路",
+  "inspectionData": "AOI 报警 11 处/块均 3 处；电测开路网络 NET-203/NET-215；批次不合格 6 块",
+  "quantity": { "defectives": 6, "batchTotal": 150 },
+  "detectedBy": "AOI 检出，检验员复判确认",
+  "disposition": "不合格品隔离，批次暂停流转，待 8D 分析",
+  "severity": "B 级"
+}
