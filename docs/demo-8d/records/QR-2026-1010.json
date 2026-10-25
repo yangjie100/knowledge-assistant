@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1010",
+  "productCode": "ZK-C6 主控单元",
+  "batchNo": "P2026-1027-03",
+  "process": "环境试验",
+  "occurrenceTime": "2026-10-19 08:30",
+  "defectDescription": "低温 -40℃ 保持阶段 4 块板时钟丢失，恢复常温后自恢复，示波器确认晶振输出停振",
+  "inspectionData": "停振 4/20；晶振引脚负阻测试常温裕量 2.1 倍，低温实测仅 1.2 倍（要求 ≥2 倍）；常温功能测试历史全通过",
+  "quantity": {
+    "defectives": 4,
+    "batchTotal": 20
+  },
+  "detectedBy": "低温试验监控",
+  "disposition": "该批退出试验，低温批次全数晶振裕量复测，待 8D 分析",
+  "severity": "B 级"
+}

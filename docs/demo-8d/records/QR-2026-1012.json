@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1012",
+  "productCode": "ZK-A7 控制板组件",
+  "batchNo": "P2026-1031-02",
+  "process": "清洗",
+  "occurrenceTime": "2026-10-24 17:10",
+  "defectDescription": "盐雾试验后板面出现白色树枝晶状产物，离子污染度复测 1.9μgNaCl/cm²（标准 ≤1.5），同一清洗线当周产品",
+  "inspectionData": "污染超标的 3 批次；清洗线末级水槽电导率记录缺失 2 天；盐雾 48h 后绝缘电阻下降一个量级",
+  "quantity": {
+    "defectives": 3,
+    "batchTotal": 45
+  },
+  "detectedBy": "盐雾试验后检查",
+  "disposition": "当周清洗线产品全部追回复测，清洗线停线，待 8D 分析",
+  "severity": "A 级"
+}

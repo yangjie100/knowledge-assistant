@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1015",
+  "productCode": "ZK-C6 主控单元",
+  "batchNo": "P2026-1024-01",
+  "process": "软件测试",
+  "occurrenceTime": "2026-10-22 20:40",
+  "defectDescription": "72h 连续拷机中 3 台主控周期性复位（约 26h 一次），复位前日志出现看门狗喂狗超时告警",
+  "inspectionData": "复位 3/60 台；故障时段 CPU 占用率峰值 97%；喂狗任务优先级为最低级；内存曲线稳定无泄漏特征",
+  "quantity": {
+    "defectives": 3,
+    "batchTotal": 60
+  },
+  "detectedBy": "自动测试平台日志",
+  "disposition": "故障机保留现场数据，该批软件版本冻结，待 8D 分析",
+  "severity": "B 级"
+}

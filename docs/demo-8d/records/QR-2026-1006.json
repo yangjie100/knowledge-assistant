@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1006",
+  "productCode": "ZK-A7 控制板组件",
+  "batchNo": "P2026-1101-01",
+  "process": "高温老化",
+  "occurrenceTime": "2026-10-23 09:40",
+  "defectDescription": "高温老化 48h 后复测，4 块板 0402 电容容量衰降 28%-41%（超出 ±20% 容差），位置集中于分板边附近",
+  "inspectionData": "容量复测 240 只，异常 11 只；断面分析 2 只确认弯曲裂纹贯穿介质层；失效件长轴均平行于分板边",
+  "quantity": {
+    "defectives": 4,
+    "batchTotal": 60
+  },
+  "detectedBy": "老化后复测电测",
+  "disposition": "该批停发出库，分板工序暂停，待 8D 分析",
+  "severity": "B 级"
+}

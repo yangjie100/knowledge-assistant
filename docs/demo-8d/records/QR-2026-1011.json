@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1011",
+  "productCode": "ZK-B4 功率模块",
+  "batchNo": "P2026-1029-04",
+  "process": "X-Ray 检验",
+  "occurrenceTime": "2026-10-22 14:05",
+  "defectDescription": "X-Ray 全检发现 0.8mm 节距 BGA 中心区域焊球空洞率 34%（标准 ≤25%），批量性分布",
+  "inspectionData": "超标 12/95 块；空洞集中于中心第 3-5 圈焊球；当前回流曲线无排气平台段；X-Ray 阈值参数上月被调整为 35%",
+  "quantity": {
+    "defectives": 12,
+    "batchTotal": 95
+  },
+  "detectedBy": "X-Ray 全检",
+  "disposition": "超标板隔离待切片确认，炉温曲线冻结，待 8D 分析",
+  "severity": "B 级"
+}

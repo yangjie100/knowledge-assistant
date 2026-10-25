@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1009",
+  "productCode": "ZK-D2 图像处理板",
+  "batchNo": "P2026-1025-01",
+  "process": "AOI 检验（流出）",
+  "occurrenceTime": "2026-10-21 16:48",
+  "defectDescription": "下工序复检发现 3 块板钽电容极性反接流出，追溯 AOI 记录显示该料号全部通过，怀疑程序检查项被关闭",
+  "inspectionData": "流出率 3/150；导出 AOI 当前程序库，该料号极性检查窗口参数为 disabled；程序版本上周曾回退过一次",
+  "quantity": {
+    "defectives": 3,
+    "batchTotal": 150
+  },
+  "detectedBy": "下工序复检发现",
+  "disposition": "当日产品全数复检，AOI 程序冻结版本，待 8D 分析",
+  "severity": "A 级"
+}

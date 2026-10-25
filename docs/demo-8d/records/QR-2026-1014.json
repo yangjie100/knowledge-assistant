@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1014",
+  "productCode": "ZK-E2 显示终端",
+  "batchNo": "P2026-1023-02",
+  "process": "环境试验（振动）",
+  "occurrenceTime": "2026-10-21 09:20",
+  "defectDescription": "随机振动试验中 2 台整机出现机内异响，试验后拆解确认散热器固定簧片松动脱开",
+  "inspectionData": "松动 2/16 台；簧片紧固力实测 6N·m（设计要求 9±1N·m）；同批簧片尺寸抽测在公差内",
+  "quantity": {
+    "defectives": 2,
+    "batchTotal": 16
+  },
+  "detectedBy": "振动试验人员听感发现",
+  "disposition": "该批整机组装工序复查，待 8D 分析",
+  "severity": "B 级"
+}

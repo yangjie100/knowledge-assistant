@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1008",
+  "productCode": "ZK-C5 通信板",
+  "batchNo": "P2026-1030-05",
+  "process": "三防涂覆",
+  "occurrenceTime": "2026-10-24 11:15",
+  "defectDescription": "三防涂覆后荧光检查发现 J3、J5 连接器接触件上有漆料流入，测厚局部最高 118μm（标准 30-80μm）",
+  "inspectionData": "流入接触件 6 块板；接触电阻复测 2 只超差；遮蔽夹具角部变形目视可见",
+  "quantity": {
+    "defectives": 6,
+    "batchTotal": 88
+  },
+  "detectedBy": "荧光检查全检",
+  "disposition": "流入件隔离待清洗重涂，遮蔽夹具停用，待 8D 分析",
+  "severity": "B 级"
+}

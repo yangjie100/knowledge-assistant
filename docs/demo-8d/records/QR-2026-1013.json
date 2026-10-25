@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1013",
+  "productCode": "ZK-E2 显示终端",
+  "batchNo": "P2026-1026-01",
+  "process": "整机老化",
+  "occurrenceTime": "2026-10-23 10:55",
+  "defectDescription": "整机老化 12h 后液晶屏出现竖条纹花屏，断电静置后恢复，复现率随老化时间升高",
+  "inspectionData": "花屏 5/80 台；LVDS 接口信号完整性常温合格；屏温监测老化中最高 68℃（规格上限 70℃）；同型号屏此前无类似记录",
+  "quantity": {
+    "defectives": 5,
+    "batchTotal": 80
+  },
+  "detectedBy": "老化巡检",
+  "disposition": "花屏整机隔离，该批暂缓交付，待 8D 分析",
+  "severity": "B 级"
+}

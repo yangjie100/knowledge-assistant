@@ -1,0 +1,16 @@
+{
+  "recordId": "QR-2026-1007",
+  "productCode": "ZK-B4 功率模块",
+  "batchNo": "P2026-1028-02",
+  "process": "装配＋功能老化",
+  "occurrenceTime": "2026-10-20 15:20",
+  "defectDescription": "功能老化第 2 小时起 MOSFET 批量失效，集中于同一手插件工位生产的板号段，失效表现为输出短路",
+  "inspectionData": "失效 9/210 只，全部同一工位段；失效分析 3 只确认栅极氧化层击穿；该工位腕带接地电阻实测无穷大",
+  "quantity": {
+    "defectives": 9,
+    "batchTotal": 210
+  },
+  "detectedBy": "老化监控报警",
+  "disposition": "该工位产品全数隔离，工位停线整改，待 8D 分析",
+  "severity": "A 级"
+}
