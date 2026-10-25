@@ -26,11 +26,27 @@ public class ChainWorkflow implements Workflow {
         String current = input.question();
 
         try {
+            if (current == null || current.isBlank()) {
+                log.warn("Chain workflow received empty input question");
+                return WorkflowResponse.builder()
+                        .success(false)
+                        .errorMessage("Chain workflow failed: empty input question")
+                        .build();
+            }
+
             log.info("Chain workflow started, step count: {}", steps.size());
 
             for (WorkflowStep step : steps) {
                 log.info("Executing step: {}, input length: {}", step.name(), current.length());
                 current = step.execute(current);
+                if (current == null || current.isBlank()) {
+                    log.warn("Chain step [{}] returned empty content", step.name());
+                    return WorkflowResponse.builder()
+                            .success(false)
+                            .errorMessage("Chain workflow failed: step [" + step.name()
+                                    + "] returned empty content")
+                            .build();
+                }
             }
 
             log.info("Chain workflow completed");

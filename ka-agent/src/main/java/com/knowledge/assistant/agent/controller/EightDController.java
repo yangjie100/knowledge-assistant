@@ -28,6 +28,6 @@ public class EightDController {
         if (report.isBlank()) {
             return Result.fail("8D 报告生成失败：模型未返回有效内容");
         }
-        return Result.ok(new EightDReportResponse("markdown", report));
+        return Result.ok(new EightDReportResponse(EightDReportResponse.FORMAT_MARKDOWN, report));
     }
 }

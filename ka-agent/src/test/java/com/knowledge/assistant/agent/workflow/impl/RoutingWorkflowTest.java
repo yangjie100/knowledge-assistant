@@ -52,6 +52,26 @@ class RoutingWorkflowTest {
     }
 
     @Test
+    @DisplayName("Routing workflow should return clear error when router returns null")
+    void shouldReturnClearErrorWhenRouterReturnsNull() {
+        // Given — RouterSelectorStep uses null as sentinel when LLM returns an invalid route key
+        WorkflowStep router = new ChainWorkflowTest.StubStep("router", s -> null);
+        Map<String, WorkflowStep> stepMap = new LinkedHashMap<>();
+        stepMap.put("general", new ChainWorkflowTest.StubStep("general", s -> "GEN"));
+
+        RoutingWorkflow workflow = new RoutingWorkflow(router, stepMap);
+
+        // When
+        WorkflowResponse response = workflow.execute(new WorkflowRequest("test"));
+
+        // Then — must NOT surface an NPE message from String.trim()
+        assertFalse(response.isSuccess());
+        assertNotNull(response.getErrorMessage());
+        assertTrue(response.getErrorMessage().contains("no valid route"),
+                "expected clear routing failure, got: " + response.getErrorMessage());
+    }
+
+    @Test
     @DisplayName("Routing workflow should handle different route selections")
     void shouldHandleDifferentRoutes() {
         // Given

@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class EightDConfig {
 
-    static final String SYSTEM_PROMPT = """
+    private static final String SYSTEM_PROMPT = """
             你是一名军工电子制造行业的资深质量工程师，精通 8D 问题解决方法论、5Why 与鱼骨图（5M1E）分析。\
             你撰写的质量报告结构严谨、表述规范、结论有据，符合军工质量文档的行文风格。你只输出报告本体。""";
 

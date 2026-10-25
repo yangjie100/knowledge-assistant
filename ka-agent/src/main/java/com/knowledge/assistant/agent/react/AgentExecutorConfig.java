@@ -52,7 +52,7 @@ public class AgentExecutorConfig {
                                              DateTimeTool dateTimeTool,
                                              KnowledgeStatsTool statsTool,
                                              CalculatorTool calcTool) {
-        // Ollama (deepseek-r1) fallback — ZHIPU_API_KEY not set, keeps app bootable
+        // Ollama local-model fallback (model configured in application.yml) — ZHIPU_API_KEY not set, keeps app bootable
         return buildReactClient(chatModel, searchTool, dateTimeTool, statsTool, calcTool);
     }
 

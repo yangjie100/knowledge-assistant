@@ -9,6 +9,6 @@ import jakarta.validation.constraints.Size;
  */
 public record EightDGenerateRequest(
         @NotBlank(message = "质量异常记录不能为空")
-        @Size(min = 20, max = 8000, message = "质量异常记录长度须在 20-8000 字符之间")
+        @Size(min = 20, max = 4000, message = "质量异常记录长度须在 20-4000 字符之间")
         String qualityRecord) {
 }

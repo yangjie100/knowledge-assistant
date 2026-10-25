@@ -28,7 +28,17 @@ public class RoutingWorkflow implements Workflow {
         try {
             log.info("Routing workflow started, route count: {}", stepMap.size());
 
-            String routeKey = router.execute(input.question()).trim();
+            // RouterSelectorStep returns null as sentinel when the LLM yields an invalid
+            // route key — fail with a clear message instead of NPE-ing on trim().
+            String routeKey = router.execute(input.question());
+            if (routeKey == null || routeKey.isBlank()) {
+                log.warn("Router returned no valid route key, aborting");
+                return WorkflowResponse.builder()
+                        .success(false)
+                        .errorMessage("Routing workflow failed: router returned no valid route key")
+                        .build();
+            }
+            routeKey = routeKey.trim();
             log.info("Route selected: {}", routeKey);
 
             WorkflowStep step = stepMap.get(routeKey);

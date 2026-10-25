@@ -93,6 +93,7 @@ public class AgentExecutor {
         try {
             return "event: " + event + "\ndata: " + objectMapper.writeValueAsString(step) + "\n\n";
         } catch (JsonProcessingException e) {
+            log.error("Failed to serialize AgentStep for SSE, event: {}", event, e);
             return "event: error\ndata: {\"phase\":\"error\"}\n\n";
         }
     }

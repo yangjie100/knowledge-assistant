@@ -18,6 +18,9 @@ import java.util.List;
 @Slf4j
 public class EightDReportService {
 
+    /** Log-discipline cap, aligned with KnowledgeSearchStep: business-sensitive record text. */
+    private static final int LOG_QUERY_PREFIX_CHARS = 50;
+
     private final RetrievalService retrievalService;
     private final EightDPromptBuilder promptBuilder;
     private final ChatClient eightDChatClient;
@@ -36,11 +39,14 @@ public class EightDReportService {
     public String generateReport(String qualityRecord) {
         String query = promptBuilder.buildRetrievalQuery(qualityRecord);
         List<Document> similarCases = retrievalService.retrieve(query);
-        log.info("8D generation: retrieval query='{}', similar cases={}", query, similarCases.size());
+        log.info("8D generation: retrieval query length: {}, prefix: '{}', similar cases: {}",
+                query.length(),
+                query.substring(0, Math.min(query.length(), LOG_QUERY_PREFIX_CHARS)),
+                similarCases.size());
         String userPrompt = promptBuilder.buildUserPrompt(qualityRecord, similarCases);
         String report = eightDChatClient.prompt().user(userPrompt).call().content();
         if (report == null || report.isBlank()) {
-            log.warn("8D generation returned empty content, query='{}'", query);
+            log.warn("8D generation returned empty content, similar cases: {}", similarCases.size());
             return "";
         }
         return report.strip();

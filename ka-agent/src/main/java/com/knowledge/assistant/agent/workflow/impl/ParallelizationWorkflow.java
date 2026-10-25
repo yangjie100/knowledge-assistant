@@ -86,8 +86,10 @@ public class ParallelizationWorkflow implements Workflow {
                     .build();
 
         } catch (TimeoutException e) {
-            // Do not let a stuck LLM call hold the calling thread forever: cancel pending
-            // steps (interrupt) and degrade to an error response at the timeout boundary.
+            // Do not let a stuck LLM call hold the calling thread forever: cancel not-yet-started
+            // steps and degrade to an error response at the timeout boundary. NOTE: cancel(true)
+            // does NOT interrupt an already-running blocking LLM call — those are bounded by the
+            // RestClient read timeout (see RestClientTimeoutConfig), the actual release mechanism.
             log.error("Parallel workflow timed out after {}s, degrading", timeoutSeconds);
             futures.forEach(f -> f.cancel(true));
             return WorkflowResponse.builder()

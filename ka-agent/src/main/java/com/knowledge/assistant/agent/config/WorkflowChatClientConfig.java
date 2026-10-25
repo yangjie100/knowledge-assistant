@@ -15,8 +15,9 @@ import org.springframework.context.annotation.Configuration;
  * so if the bean factory method lived in the same class, creating the @Configuration instance
  * would require the very bean it itself produces — BeanCurrentlyInCreationException.
  *
- * <p>GLM-5.2 preferred (~15s vs deepseek-r1's ~180s for long Chinese answers), Ollama
- * deepseek-r1 fallback when ZHIPU_API_KEY is absent. Mutually-exclusive
+ * <p>Cloud GLM preferred for latency (historically ~15s vs ~180s on the local Ollama
+ * fallback for long Chinese answers); the Ollama fallback engages when ZHIPU_API_KEY is
+ * absent, with the concrete model configured in application.yml. Mutually-exclusive
  * @ConditionalOnExpression + same bean name => exactly one registers.
  *
  * <p>Deliberately NO memory advisor and NO defaultTools: workflow steps (ChatClientStep /
